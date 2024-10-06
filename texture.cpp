@@ -12,6 +12,13 @@ Image::Image() {};
 
 Image::~Image() {};
 
+void Image::localizeUV(float *localUV, const float& u, const float& v) {
+    float u_local = u - floor(u);
+    float v_local = v - floor(v);
+    localUV[0] = u_local;
+    localUV[1] = v_local;
+}
+
 int Image::getUDIM(const std::string& path) {
     std::filesystem::path tempPath = path;
     const std::string stem = tempPath.stem().string();
@@ -19,6 +26,13 @@ int Image::getUDIM(const std::string& path) {
     const std::string udim_str = stem.substr(strLen - 4);
     int udim = std::stoi(udim_str);
     return udim;
+}
+
+size_t Image::getUDIMfromUV(float u, float v) {
+    // Retrun UDIM number without 1000, eg. 1001 is 1, 1011 is 11
+    size_t U = static_cast<size_t>(ceil(u));
+    size_t V = static_cast<size_t>(floor(v)) * 10;
+    return U + V;
 }
 
 void Image::loadExr(const std::string& path)

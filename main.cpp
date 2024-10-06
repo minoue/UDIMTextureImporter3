@@ -6,14 +6,12 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
-#include <string_view>
 #include <ranges>
 #include <vector>
 
 #include "main.hpp"
 #include "sdk/GoZ_Mesh.h"
 #include "texture.hpp"
-#include "utils.hpp"
 
 using namespace Eigen;
 
@@ -323,7 +321,7 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
 
             float u = uv0.x();
             float v = uv0.y();
-            size_t udim = Utils::get_udim(u, v);
+            size_t udim = Image::getUDIMfromUV(u, v);
 
             Vector3f displacement;
 
@@ -337,9 +335,10 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
                     int width = img.width;
                     int height = img.height;
                     int channels = img.nchannels;
-                    Vector2f local_uv = Utils::localize_uv(u, v);
+                    float localizedUV[2];
+                    Image::localizeUV(localizedUV, u, v);
                     Vector3f rgb;
-                    rgb = getPixelValue(local_uv.x(), local_uv.y(), img.pixels, width,
+                    rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                         height, channels);
                     displacement = rgb.transpose() * mat;
                 }
@@ -382,7 +381,7 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
 
             float u = uv0.x();
             float v = uv0.y();
-            size_t udim = Utils::get_udim(u, v);
+            size_t udim = Image::getUDIMfromUV(u, v);
 
             Vector3f displacement;
 
@@ -396,10 +395,10 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
                     int width = img.width;
                     int height = img.height;
                     int channels = img.nchannels;
-                    Vector2f local_uv = Utils::localize_uv(u, v);
+                    float localizedUV[2];
+                    Image::localizeUV(localizedUV, u, v);
                     Vector3f rgb;
-                    displacement = getPixelValue(local_uv.x(), local_uv.y(),
-                        img.pixels, width, height, channels);
+                    displacement = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width, height, channels);
                 }
             }
             Vector3f new_pp;
@@ -436,7 +435,7 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
             Vector3f& uv0 = currentVertex.uvw;
             float u = uv0.x();
             float v = uv0.y();
-            size_t udim = Utils::get_udim(u, v);
+            size_t udim = Image::getUDIMfromUV(u, v);
 
             if (udim > texture_data.size()) {
                 continue;
@@ -450,8 +449,9 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
                 int width = img.width;
                 int height = img.height;
                 int channels = img.nchannels;
-                Vector2f local_uv = Utils::localize_uv(u, v);
-                Vector3f rgb = getPixelValue(local_uv.x(), local_uv.y(), img.pixels, width,
+                float localizedUV[2];
+                Image::localizeUV(localizedUV, u, v);
+                Vector3f rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                     height, channels);
 
                 // Convert 4 8-bit int to a single 32 bit value

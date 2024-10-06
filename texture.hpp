@@ -16,6 +16,8 @@ public:
     void loadExr(const std::string& path);
     void loadTif(const std::string& path);
 
+    static void localizeUV(float *localUV, const float& u, const float& v);
     static int getUDIM(const std::string& path);
+    static size_t getUDIMfromUV(float u, float v);
 private:
 };

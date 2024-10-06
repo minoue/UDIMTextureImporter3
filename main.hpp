@@ -10,7 +10,6 @@
 
 #include "Eigen/Core"
 #include "Eigen/Dense"
-// #include "Eigen/LU"
 
 #ifdef __cplusplus
 extern "C" {

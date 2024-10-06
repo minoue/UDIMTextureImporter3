@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.13)
 project(GoUDIM)
 
-set(DLL_VERSION 0.1.1)
+set(DLL_VERSION 0.1.2)
 
 set(SOURCE_FILES
     main.cpp
     texture.cpp
-    utils.cpp
     sdk/GoZ_Mesh.cpp
     sdk/GoZ_Utils.cpp
     miniz.c
