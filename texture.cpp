@@ -19,7 +19,7 @@ void Image::localizeUV(float* localUV, const float& u, const float& v)
     localUV[1] = v_local;
 }
 
-int Image::getUDIM(const std::string& path)
+int Image::getUDIMfromPath(const std::string& path)
 {
     std::filesystem::path tempPath = path;
     const std::string stem = tempPath.stem().string();

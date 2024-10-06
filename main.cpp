@@ -34,7 +34,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         paths.push_back(path);
 
         // Get udim in int eg. 1001, 1011
-        int udim = Image::getUDIM(p);
+        int udim = Image::getUDIMfromPath(p);
 
         int udimCount = udim - 1000;
         if (udimCount > maxUDIM) {
@@ -60,7 +60,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
             std::cout << "Not suppported file format" << std::endl;
         }
 
-        int udim = Image::getUDIM(path.string());
+        int udim = Image::getUDIMfromPath(path.string());
         int udimCount = udim - 1000;
         data[size_t(udimCount) - 1] = img;
     }
