@@ -51,18 +51,6 @@ std::string Utils::join(const std::vector<std::string>& v, const char* delim = 0
   return s;
 }
 
-std::string Utils::pathGetUdim(const std::string path)
-{
-    std::vector<std::string> pathSplit = split(path, '.');
-    // split(path, pathSplit, '.');
-    size_t n = pathSplit.size();
-    std::string& word = pathSplit[n-2];
-    size_t strLen = word.length();
-    std::string udim = word.substr(strLen - 4);
-    return udim;
-}
-
-
 // https://www.oreilly.com/library/view/c-cookbook/0596007612/ch03s06.html
 float Utils::sciToFloat(const std::string& str)
 {

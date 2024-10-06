@@ -6,6 +6,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
+#include <string_view>
+#include <ranges>
 #include <vector>
 
 #include "main.hpp"
@@ -15,42 +17,54 @@
 
 using namespace Eigen;
 
-void initTextures(const std::vector<std::string>& paths,
-    std::vector<Image>& data)
-{
 
-    // Resize vector to the number of udim.
-    int max_udim = 0;
-    for (auto& path : paths) {
-        std::string udim_str = Utils::pathGetUdim(path);
-        int udim_int = std::stoi(udim_str) - 1000;
-        if (udim_int > max_udim) {
-            max_udim = udim_int;
+void initTextures(std::string& pathStringArray, std::vector<Image>& data) {
+    using std::operator""sv;
+
+    std::vector<std::filesystem::path> paths;
+    int maxUDIM = 0;
+
+    for (auto sv : pathStringArray | std::views::split("#"sv)) {
+        const std::string p = {sv.begin(), sv.end()};
+
+        // You may get an empty string at the end of the loop so skip it
+        if (p.empty()) {
+            continue;
+        }
+
+        std::filesystem::path path = p;
+        paths.push_back(path);
+
+        // Get udim in int eg. 1001, 1011
+        int udim = Image::getUDIM(p);
+
+        int udimCount = udim - 1000;
+        if (udimCount > maxUDIM) {
+            maxUDIM = udimCount;
         }
     }
-    data.resize(size_t(max_udim));
-    // size_t numTextures = paths.size();
+
+    data.resize(size_t(maxUDIM));
 
     // Create texture data
     for (auto& path : paths) {
-        std::string ext = std::filesystem::path(path.c_str()).extension().string();
-
-        std::cout << "Loading texture : " << path << std::endl;
+        std::string ext = path.extension().string();
+        std::cout << "Loading texture : " << path.string() << std::endl;
 
         Image img;
         img.isEmpty = false;
 
         if (ext == ".exr") {
-            img.loadExr(path);
+            img.loadExr(path.string());
         } else if (ext == ".tif" || ext == ".tiff") {
-            img.loadTif(path);
+            img.loadTif(path.string());
         } else {
             std::cout << "Not suppported file format" << std::endl;
         }
 
-        std::string udim_str = Utils::pathGetUdim(path);
-        int udim_int = std::stoi(udim_str) - 1000;
-        data[size_t(udim_int) - 1] = img;
+        int udim = Image::getUDIM(path.string());
+        int udimCount = udim - 1000;
+        data[size_t(udimCount) - 1] = img;
     }
 }
 
@@ -485,12 +499,11 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
 
     // Convert/Split long path string to path array
     std::string pathStringArray(pOptBuffer1);
-    std::vector<std::string> pathVector = Utils::split(pathStringArray, '#');
 
     // Textures
     std::cout << "1/5 : Loading textures..." << std::endl;
     std::vector<Image> texture_data;
-    initTextures(pathVector, texture_data);
+    initTextures(pathStringArray, texture_data);
     log << "Textures are initialized" << std::endl;
 
     // Mesh

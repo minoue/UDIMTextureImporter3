@@ -1,6 +1,7 @@
 #define TINYEXR_IMPLEMENTATION
 #include <string>
 #include <cstdint>
+#include <filesystem>
 
 #include "tinyexr.h"
 #include "texture.hpp"
@@ -10,6 +11,15 @@
 Image::Image() {};
 
 Image::~Image() {};
+
+int Image::getUDIM(const std::string& path) {
+    std::filesystem::path tempPath = path;
+    const std::string stem = tempPath.stem().string();
+    size_t strLen = stem.length();
+    const std::string udim_str = stem.substr(strLen - 4);
+    int udim = std::stoi(udim_str);
+    return udim;
+}
 
 void Image::loadExr(const std::string& path)
 {

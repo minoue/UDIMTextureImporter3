@@ -18,7 +18,6 @@ public:
     static size_t get_udim(const float u, const float v);
     static std::vector<std::string> split(const std::string longText, const char delimiter);
     static std::string join(const std::vector<std::string>& v, const char* delim);
-    static std::string pathGetUdim(const std::string path);
     static float sciToFloat(const std::string& str);
 
 private:

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(GoUDIM)
 
-set(DLL_VERSION 0.1.0)
+set(DLL_VERSION 0.1.1)
 
 set(SOURCE_FILES
     main.cpp
@@ -12,7 +12,7 @@ set(SOURCE_FILES
     miniz.c
 )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 if (WIN32)
     if (MSVC_VERSION GREATER_EQUAL "1900")

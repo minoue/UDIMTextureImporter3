@@ -15,5 +15,7 @@ public:
     bool isEmpty = true;
     void loadExr(const std::string& path);
     void loadTif(const std::string& path);
+
+    static int getUDIM(const std::string& path);
 private:
 };
