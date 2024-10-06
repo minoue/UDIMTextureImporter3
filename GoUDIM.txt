@@ -1,0 +1,322 @@
+// UI version 0.1.0
+
+[VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/GoUDIM_in.GoZ"]]
+[VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/GoUDIM_out.Goz"]]
+
+// this file path needs to be replaced
+[VarDef, dllPath, "build/Release/GoUDIM.dll"]
+[VarDef, ZFileUtilsPath, "ZFileUtils/ZFileUtils64.dll"]
+
+[VarDef, err, 0] // 0: Good, 1: Bad
+// [VarDef, fileCount, 0]
+[VarDef, fileName, ""]
+[VarDef, channel, "R"]
+[VarDef, gamma, 0]
+[VarDef, midValue, 0]
+[VarDef, channel, ""]
+
+[If, [FileExists, [Var, ZFileUtilsPath]],
+    // [Note, "ZFileUtils found"]
+    , // else, not found
+    [Note, "ZFileUtils not found"]
+    [Exit]
+]
+
+[ISubPalette,"ZPlugin:GoUDIM"]
+
+[ISubPalette, “ZPlugin:GoUDIM:Vector Displacement”, 0]
+
+[IButton, "ZPlugin:GoUDIM:Vector Displacement:Import", "Annotation here",
+    [IConfig,2022]
+    [FileNameSetNext,[Var, GoZInputPath]]
+    [IPress, Tool:Export]
+
+    [VarDef, dialogTitle, "Please select image files"]
+    [VarSet, fileExt, "tif,tiff,exr"]
+    [MemCreate, ZFileUTils_FileExt, 256, 0]
+    [MemWriteString, ZFileUTils_FileExt, fileExt, 0]
+    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
+    [MemDelete, ZFileUTils_FileExt]
+    // [Note, [StrMerge, fileCount," files selected"],,2]
+
+    [If, fileCount > 0,
+        [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
+        [VarSet, channel, "RGB"]
+        [MemCreate, MemChannel, 256, 0]
+        [MemWriteString, MemChannel, channel, 0]
+
+        [MemCreate, MemFilePath, 256, 0]
+        [MemCreate, MemFilePathArray, 32768, 0]
+        [VarSet, index, 1]
+        [VarSet, offset, 0]
+        [VarSet, numSinglePath, 0]
+        [Loop, fileCount,
+            [VarSet, err, [FileExecute, [Var, ZFileUtilsPath], "GetFilePath", , index, MemFilePath]]
+            [VarInc, index]
+            [If, err == 0,
+                [MemReadString, MemFilePath, fileName]
+                [VarSet, fileName, [StrMerge, fileName, "#"]]
+                // [Note, fileName, , 1]
+                // [Note, offset, , 1]
+                [MemWriteString, MemFilePathArray, fileName, offset]
+                [VarSet, numSinglePath, [StrLength, fileName]]
+                [VarAdd, offset, numSinglePath]
+            , // else, error
+                [LoopContinue]
+            ] // end if
+        ] // end loop
+        [MemDelete, MemFilePath]
+
+        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
+        [MemDelete, MemChannel]
+        [MemDelete, MemFilePathArray]
+
+        [if, err,
+            [Note, "Failed to run the external command."]
+            [Exit]
+            ,
+        ]
+
+        , // else, no textures are selected.
+        [Exit]
+    ] // end if fileCount
+
+    [If, [FileExists, GoZOutputPath],
+        [FileNameSetNext, GoZOutputPath]
+        [IPress, Tool:Import]
+        , // else
+        [Note, "no output file found" , , 2]
+    ]
+    , 0 // Initially Disabled?
+    , 168 // Button width
+    , // Optional hotkey
+    , // Optional button icon
+    , 32 // Button height
+        // [Note, "Done"]
+]
+
+[ISubPalette, “ZPlugin:GoUDIM:Normal Displacement”, 0]
+
+[ISwitch,
+    "ZPlugin:GoUDIM:Normal Displacement:R",
+    1,
+    "Switch 1",
+    // on command
+    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:G"]
+    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:B"]
+    [VarSet, channel, "R"]
+    ,
+    // off command
+    ,
+    0, // Initially disabled?
+    56, // Width
+    24, // Height
+]             
+
+[ISwitch,
+    "ZPlugin:GoUDIM:Normal Displacement:G",
+    0,
+    "Switch 1",
+    // on command
+    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:R"]
+    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:B"]
+    [VarSet, channel, "G"]
+    ,
+    // off command
+    ,
+    0, // Initially disabled?
+    56, // Width
+    24, // Height
+]
+
+[ISwitch,
+    "ZPlugin:GoUDIM:Normal Displacement:B",
+    0,
+    "Switch 1",
+    // on command
+    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:R"]
+    [IUnPress, "ZPlugin:GoUDIM:Normal DIsplacement:G"]
+    [VarSet, channel, "B"]
+    ,
+    // off command
+    ,
+    0, // Initially disabled?
+    56, // Width
+    24, // Height
+]
+
+[ISlider, "ZPlugin:GoUDIM:Normal Displacement:Mid Value",
+    0, // initial value
+    0.1, // Resolution
+    0, // Min value
+    1.0, // Max value
+    , // Info text
+    [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]], // Command group
+    0,
+    168,
+    0
+]
+
+[IButton, "ZPlugin:GoUDIM:Normal Displacement:Import", "Annotation here",
+    [IConfig,2022]
+    [FileNameSetNext,[Var, GoZInputPath]]
+    [IPress, Tool:Export]
+
+    [VarDef, dialogTitle, "Please select image files"]
+    [VarSet, fileExt, "tif,tiff,exr"]
+    [MemCreate, ZFileUTils_FileExt, 256, 0]
+    [MemWriteString, ZFileUTils_FileExt, fileExt,0]
+    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
+    [MemDelete, ZFileUTils_FileExt]
+    // [Note, [StrMerge, fileCount," files selected"],,2]
+
+    [If, fileCount > 0,
+        [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
+        [MemCreate, MemChannel, 256, 0]
+        [MemWriteString, MemChannel, channel, 0]
+
+        [MemCreate, MemFilePath, 256, 0]
+        [MemCreate, MemFilePathArray, 32768, 0]
+        [VarSet, index, 1]
+        [VarSet, offset, 0]
+        [VarSet, numSinglePath, 0]
+        [Loop, fileCount,
+            [VarSet, err, [FileExecute, [Var, ZFileUtilsPath], "GetFilePath", , index, MemFilePath]]
+            [VarInc, index]
+            [If, err == 0,
+                [MemReadString, MemFilePath, fileName]
+                [VarSet, fileName, [StrMerge, fileName, "#"]]
+                [MemWriteString, MemFilePathArray, fileName, offset]
+                [VarSet, numSinglePath, [StrLength, fileName]]
+                [VarAdd, offset, numSinglePath]
+            , // else, error
+                [LoopContinue]
+            ] // end if
+        ] // end loop
+        [MemDelete, MemFilePath]
+
+        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
+
+        [MemDelete, MemChannel]
+        [MemDelete, MemFilePathArray]
+
+        [if, err,
+            [Note, "Failed to run the external command"]
+            [Exit]
+            ,
+        ]
+
+        , // else, no textures are selected.
+        [Exit]
+    ] // end if fileCount
+
+    [If, [FileExists, GoZOutputPath],
+        [FileNameSetNext, GoZOutputPath]
+        [IPress, Tool:Import]
+        , // else
+        [Note, "no output file found" , , 2]
+    ]
+    , 0 // Initially Disabled?
+    , 168 // Button width
+    , // Optional hotkey
+    , // Optional button icon
+    , 32 // Button height
+        // [Note, "Done"]
+]
+
+[ISubPalette, “ZPlugin:GoUDIM:Color”, 0]
+
+[IButton, "ZPlugin:GoUDIM:Color:Import", "Annotation here",
+    
+    [IConfig,2022]
+    [FileNameSetNext,[Var, GoZInputPath]]
+    [IPress, Tool:Export]
+
+    [VarDef, dialogTitle, "Please select image files"]
+    [VarSet, fileExt, "tif,tiff,exr"]
+    [MemCreate, ZFileUTils_FileExt, 256, 0]
+    [MemWriteString, ZFileUTils_FileExt, fileExt,0]
+    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
+    [MemDelete, ZFileUTils_FileExt]
+    // [Note, [StrMerge, fileCount," files selected"],,2]
+
+    [If, fileCount > 0,
+        // [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
+        [VarSet, gamma, [IGet, "ZPlugin:GoUDIM:Gamma"]]
+
+        [VarSet, channel, "COL"]
+        [MemCreate, MemChannel, 256, 0]
+        [MemWriteString, MemChannel, channel, 0]
+
+        [MemCreate, MemFilePath, 256, 0]
+        [MemCreate, MemFilePathArray, 32768, 0]
+        [VarSet, index, 1]
+        [VarSet, offset, 0]
+        [VarSet, numSinglePath, 0]
+        [Loop, fileCount,
+            [VarSet, err, [FileExecute, [Var, ZFileUtilsPath], "GetFilePath", , index, MemFilePath]]
+            [VarInc, index]
+            [If, err == 0,
+                [MemReadString, MemFilePath, fileName]
+                [VarSet, fileName, [StrMerge, fileName, "#"]]
+                [MemWriteString, MemFilePathArray, fileName, offset]
+                [VarSet, numSinglePath, [StrLength, fileName]]
+                [VarAdd, offset, numSinglePath]
+            , // else, error
+                [LoopContinue]
+            ] // end if
+        ] // end loop
+        [MemDelete, MemFilePath]
+
+        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
+
+        [MemDelete, MemChannel]
+        [MemDelete, MemFilePathArray]
+
+        [if, err,
+            [Note, "Failed to run the external command."]
+            [Exit]
+            ,
+        ]
+
+        , // else, no textures are selected.
+        [Exit]
+    ] // end if fileCount
+
+    [If, [FileExists, GoZOutputPath],
+        [FileNameSetNext, GoZOutputPath]
+        [IPress, Tool:Import]
+        , // else
+        [Note, "no output file found" , , 2]
+    ]
+    , 0 // Initially Disabled?
+    , 168 // Button width
+    , // Optional hotkey
+    , // Optional button icon
+    , 32 // Button height
+        // [Note, "Done"]
+]
+
+[ISlider, "ZPlugin:GoUDIM:Color:Gamma",
+    1, // initial value
+    0.1, // Resolution
+    1, // Min value
+    2.2, // Max value
+    , // Info text
+    [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Gamma"]], // Command group
+    0,
+    168,
+    0
+]
+
+[ISubPalette, “ZPlugin:GoUDIM:Mask”, 0]
+
+[IButton, "ZPlugin:GoUDIM:Mask:Import", "Annotation here",
+    // Do something here
+    , 1 // Initially Disabled?
+    , 168 // Button width
+    , // Optional hotkey
+    , // Optional button icon
+    , 32 // Button height
+        // [Note, "Done"]
+]
