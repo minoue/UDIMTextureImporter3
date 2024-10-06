@@ -1,25 +1,26 @@
 #define TINYEXR_IMPLEMENTATION
-#include <string>
 #include <cstdint>
 #include <filesystem>
+#include <string>
 
-#include "tinyexr.h"
 #include "texture.hpp"
 #include "tiffio.h"
-
+#include "tinyexr.h"
 
 Image::Image() {};
 
 Image::~Image() {};
 
-void Image::localizeUV(float *localUV, const float& u, const float& v) {
+void Image::localizeUV(float* localUV, const float& u, const float& v)
+{
     float u_local = u - floor(u);
     float v_local = v - floor(v);
     localUV[0] = u_local;
     localUV[1] = v_local;
 }
 
-int Image::getUDIM(const std::string& path) {
+int Image::getUDIM(const std::string& path)
+{
     std::filesystem::path tempPath = path;
     const std::string stem = tempPath.stem().string();
     size_t strLen = stem.length();
@@ -28,7 +29,8 @@ int Image::getUDIM(const std::string& path) {
     return udim;
 }
 
-size_t Image::getUDIMfromUV(float u, float v) {
+size_t Image::getUDIMfromUV(float u, float v)
+{
     // Retrun UDIM number without 1000, eg. 1001 is 1, 1011 is 11
     size_t U = static_cast<size_t>(ceil(u));
     size_t V = static_cast<size_t>(floor(v)) * 10;
@@ -64,7 +66,8 @@ void Image::loadExr(const std::string& path)
     }
 }
 
-void Image::loadTif(const std::string& path) {
+void Image::loadTif(const std::string& path)
+{
     TIFF* tif = TIFFOpen(path.c_str(), "r");
 
     if (tif) {
@@ -92,7 +95,7 @@ void Image::loadTif(const std::string& path) {
 
         for (unsigned int row = 0; row < height; row++) {
             TIFFReadScanline(tif, buf, row);
-            for (unsigned int col=0; col<width; col++) {
+            for (unsigned int col = 0; col < width; col++) {
                 if (bitDepth == 32) {
                     float r = static_cast<float*>(buf)[col * uint16_t(nchannels) + 0];
                     float g = static_cast<float*>(buf)[col * uint16_t(nchannels) + 1];

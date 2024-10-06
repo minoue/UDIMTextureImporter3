@@ -4,9 +4,9 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ranges>
 #include <stdio.h>
 #include <string.h>
-#include <ranges>
 #include <vector>
 
 #include "main.hpp"
@@ -15,15 +15,15 @@
 
 using namespace Eigen;
 
-
-void initTextures(std::string& pathStringArray, std::vector<Image>& data) {
+void initTextures(std::string& pathStringArray, std::vector<Image>& data)
+{
     using std::operator""sv;
 
     std::vector<std::filesystem::path> paths;
     int maxUDIM = 0;
 
     for (auto sv : pathStringArray | std::views::split("#"sv)) {
-        const std::string p = {sv.begin(), sv.end()};
+        const std::string p = { sv.begin(), sv.end() };
 
         // You may get an empty string at the end of the loop so skip it
         if (p.empty()) {
@@ -471,7 +471,6 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     }
 }
 
-
 float EXPORT importUDIM(char* GoZFilePath, double value,
     char* pOptBuffer1, int optBuffer1Size,
     char* pOptBuffer2, int optBuffer2Size,
@@ -527,7 +526,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
         std::cout << "4/5 : Applying vector displacement..." << std::endl;
         applyVectorDisplacement(mesh, vertices, normals, faces, texture_data);
         log << "Vector displacement done" << std::endl;
-    } else if (strcmp(channel, "COL") == 0){
+    } else if (strcmp(channel, "COL") == 0) {
         std::cout << "4/5 : Applying color..." << std::endl;
         applyColor(mesh, faces, texture_data, float(value));
         log << "Color applied" << std::endl;
@@ -553,7 +552,6 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
 
     return 0;
 }
-
 
 #ifdef _WIN32
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)

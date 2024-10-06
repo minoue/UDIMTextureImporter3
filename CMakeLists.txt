@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(GoUDIM)
 
-set(DLL_VERSION 0.1.2)
+set(DLL_VERSION 0.1.3)
 
 set(SOURCE_FILES
     main.cpp
