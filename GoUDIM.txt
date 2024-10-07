@@ -1,11 +1,10 @@
-// UI version 0.1.0
+// UI version 0.1.1
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/GoUDIM_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/GoUDIM_out.Goz"]]
 
-// this file path needs to be replaced
-[VarDef, dllPath, "build/Release/GoUDIM.dll"]
-[VarDef, ZFileUtilsPath, "ZFileUtils/ZFileUtils64.dll"]
+[VarDef, dllPath, "ZBRUSH_ZSTARTUP\ZPlugs64\GoUDIM\GoUDIM.dll"]
+[VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\GoUDIM\ZFileUtils\ZFileUtils64.dll"]
 
 [VarDef, err, 0] // 0: Good, 1: Bad
 // [VarDef, fileCount, 0]
