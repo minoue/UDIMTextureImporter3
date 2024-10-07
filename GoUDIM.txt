@@ -1,4 +1,4 @@
-// UI version 0.1.1
+// UI version 0.1.2
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/GoUDIM_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/GoUDIM_out.Goz"]]
@@ -87,7 +87,7 @@
         [Note, "no output file found" , , 2]
     ]
     , 0 // Initially Disabled?
-    , 168 // Button width
+    , 1 // Button width
     , // Optional hotkey
     , // Optional button icon
     , 32 // Button height
@@ -108,7 +108,7 @@
     // off command
     ,
     0, // Initially disabled?
-    56, // Width
+    1, // Width
     24, // Height
 ]             
 
@@ -124,7 +124,7 @@
     // off command
     ,
     0, // Initially disabled?
-    56, // Width
+    1, // Width
     24, // Height
 ]
 
@@ -140,7 +140,7 @@
     // off command
     ,
     0, // Initially disabled?
-    56, // Width
+    1, // Width
     24, // Height
 ]
 
@@ -152,7 +152,7 @@
     , // Info text
     [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]], // Command group
     0,
-    168,
+    1,
     0
 ]
 
@@ -216,7 +216,7 @@
         [Note, "no output file found" , , 2]
     ]
     , 0 // Initially Disabled?
-    , 168 // Button width
+    , 1 // Button width
     , // Optional hotkey
     , // Optional button icon
     , 32 // Button height
@@ -289,7 +289,7 @@
         [Note, "no output file found" , , 2]
     ]
     , 0 // Initially Disabled?
-    , 168 // Button width
+    , 1 // Button width
     , // Optional hotkey
     , // Optional button icon
     , 32 // Button height
@@ -304,7 +304,7 @@
     , // Info text
     [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Gamma"]], // Command group
     0,
-    168,
+    1,
     0
 ]
 
@@ -313,7 +313,7 @@
 [IButton, "ZPlugin:GoUDIM:Mask:Import", "Annotation here",
     // Do something here
     , 1 // Initially Disabled?
-    , 168 // Button width
+    , 1 // Button width
     , // Optional hotkey
     , // Optional button icon
     , 32 // Button height
