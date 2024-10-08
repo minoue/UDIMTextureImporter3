@@ -107,10 +107,17 @@ void Image::loadTif(const std::string& path)
                     uint16_t r = static_cast<uint16_t*>(buf)[col * nchannels + 0];
                     uint16_t g = static_cast<uint16_t*>(buf)[col * nchannels + 1];
                     uint16_t b = static_cast<uint16_t*>(buf)[col * nchannels + 2];
+                    this->pixels.push_back(float(r / 65535.0));
+                    this->pixels.push_back(float(g / 65535.0));
+                    this->pixels.push_back(float(b / 65535.0));
                 } else {
+                    // 8-bit
                     uint16_t r = static_cast<uint8_t*>(buf)[col * nchannels + 0];
                     uint16_t g = static_cast<uint8_t*>(buf)[col * nchannels + 1];
                     uint16_t b = static_cast<uint8_t*>(buf)[col * nchannels + 2];
+                    this->pixels.push_back(float(r / 255.0));
+                    this->pixels.push_back(float(g / 255.0));
+                    this->pixels.push_back(float(b / 255.0));
                 }
             }
         }
