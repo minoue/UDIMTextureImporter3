@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(GoUDIM)
 
-set(DLL_VERSION 0.1.4)
+set(DLL_VERSION 0.1.5)
 
 set(SOURCE_FILES
     main.cpp
@@ -30,6 +30,13 @@ else()
     set(PLUGIN_SUFFIX ".lib")
     set(CMAKE_SHARED_LINKER_FLAGS "-dynamiclib, -current_version ${DLL_VERSION}")
     set(CMAKE_MACOSX_RPATH 1)
+endif()
+
+# OpenMP
+find_package(OpenMP)
+if (OPENMP_CXX_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DUSE_OPENMP)
 endif()
 
 if (TIFF_INSTALL_DIR)

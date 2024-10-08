@@ -9,6 +9,10 @@
 #include <string.h>
 #include <vector>
 
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
+
 #include "main.hpp"
 #include "sdk/GoZ_Mesh.h"
 #include "texture.hpp"
@@ -44,8 +48,13 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
 
     data.resize(size_t(maxUDIM));
 
+    int numPaths = (int)paths.size();
+
     // Create texture data
-    for (auto& path : paths) {
+    // for (auto& path : paths) {
+#pragma omp parallel for
+    for (int i = 0; i <numPaths; i++) {
+        std::filesystem::path& path = paths[i];
         std::string ext = path.extension().string();
         std::cout << "Loading texture : " << path.string() << std::endl;
 
