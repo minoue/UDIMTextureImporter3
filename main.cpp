@@ -481,9 +481,9 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
 }
 
 float EXPORT importUDIM(char* GoZFilePath, double value,
-    char* pOptBuffer1, int optBuffer1Size,
-    char* pOptBuffer2, int optBuffer2Size,
-    char** zData)
+    char* pOptBuffer1, [[maybe_unused]] int optBuffer1Size,
+    char* pOptBuffer2, [[maybe_unused]] int optBuffer2Size,
+    [[maybe_unused]] char** zData)
 {
     // Open console
     AllocConsole();
@@ -563,7 +563,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
 }
 
 #ifdef _WIN32
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+BOOL WINAPI DllMain([[maybe_unused]] HINSTANCE hinstDLL, DWORD fdwReason, [[maybe_unused]] LPVOID lpvReserved)
 {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
