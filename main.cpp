@@ -480,6 +480,47 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     }
 }
 
+void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
+{
+    for (auto& f : faces) {
+        std::vector<FaceVertex>& faceVertices = f.FaceVertices;
+        size_t numFaceVertices = faceVertices.size();
+        for (size_t i = 0; i < numFaceVertices; i++) {
+            FaceVertex& currentVertex = faceVertices[i];
+            size_t currentIndex = currentVertex.vertexIndex;
+
+            Vector3f& uv0 = currentVertex.uvw;
+            float u = uv0.x();
+            float v = uv0.y();
+            size_t udim = Image::getUDIMfromUV(u, v);
+
+            if (udim > texture_data.size()) {
+                continue;
+            }
+
+            Vector3f rgb;
+            rgb << 0, 0, 0;
+
+            Image& img = texture_data[udim - 1];
+            if (!img.isEmpty) {
+                int width = img.width;
+                int height = img.height;
+                int channels = img.nchannels;
+                float localizedUV[2];
+                Image::localizeUV(localizedUV, u, v);
+                Vector3f rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
+                    height, channels);
+
+                uint16_t r = uint16_t(round(rgb.x() * 65535.0));
+
+                // replace color
+                if (mesh->m_mask[currentIndex] != NULL) {
+                    mesh->m_mask[currentIndex] = r;
+                }
+            }
+        }
+    }
+}
 float EXPORT importUDIM(char* GoZFilePath, double value,
     char* pOptBuffer1, [[maybe_unused]] int optBuffer1Size,
     char* pOptBuffer2, [[maybe_unused]] int optBuffer2Size,
@@ -539,6 +580,10 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
         std::cout << "4/5 : Applying color..." << std::endl;
         applyColor(mesh, faces, texture_data, float(value));
         log << "Color applied" << std::endl;
+    } else if (strcmp(channel, "MSK") == 0) {
+        std::cout << "4/5 : Applying mask..." << std::endl;
+        applyMask(mesh, faces, texture_data);
+        log << "Mask applied" << std::endl;
     } else {
         std::cout << "4/5 : Applying normal displacement..." << std::endl;
         applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel);
