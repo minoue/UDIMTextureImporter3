@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <vector>
+#include <format>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -51,12 +52,11 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
     int numPaths = (int)paths.size();
 
     // Create texture data
-    // for (auto& path : paths) {
+    int inc = 1;
 #pragma omp parallel for
     for (int i = 0; i <numPaths; i++) {
-        std::filesystem::path& path = paths[i];
+        std::filesystem::path& path = paths[(size_t)i];
         std::string ext = path.extension().string();
-        std::cout << "Loading texture : " << path.string() << std::endl;
 
         Image img;
         img.isEmpty = false;
@@ -72,37 +72,79 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         int udim = Image::getUDIMfromPath(path.string());
         int udimCount = udim - 1000;
         data[size_t(udimCount) - 1] = img;
+
+        auto msg = std::format("{}/{} : " , inc, numPaths);
+
+#pragma omp atomic
+        ++inc;
+
+#pragma omp critical
+        std::cout << "Loaded " << msg << path.string() << std::endl;
     }
 }
 
+/**
+ * @brief Compute tangent and bitangent using 3 point triangle
+ * @param [in] P0 : current point of triangle
+ * @param [in] P1 : previous point of triangle
+ * @param [in] P2 : next point of triangle
+ * @param [in] uv0 : current UV of triangle
+ * @param [in] uv1 : previous UV of triangle
+ * @param [in] uv2 : next UV of triangle
+ * @param [out] T : current UV of triangle
+ * @param [out] U : previous UV of triangle
+ * @param [in] N : next UV of triangle
+ * @return
+ */
 // https://stackoverflow.com/questions/5255806/how-to-calculate-tangent-and-binorma
-void computeTangentBasis(const Vector3f& A, const Vector3f& B,
-    const Vector3f& C, const Vector3f& H,
-    const Vector3f& K, const Vector3f& L, Vector3f& T,
-    Vector3f& U, Vector3f& N)
+Matrix3f computeTangentMatrix(const Vector3f& P0, const Vector3f& P1,
+    const Vector3f& P2, const Vector3f& uv0,
+    const Vector3f& uv1, const Vector3f& uv2, Vector3f& T,
+    Vector3f& B, Vector3f& N)
 {
 
-    Vector3f D = B - A;
-    Vector3f E = C - A;
-    Vector3f F = K - H;
-    Vector3f G = L - H;
+    // 2 edges (E1, E2) of the triangle in 3d space
+    Vector3f E1 = P1 - P0;
+    Vector3f E2 = P2 - P0;
 
-    MatrixXf DE(2, 3);
-    DE << D.x(), D.y(), D.z(), E.x(), E.y(), E.z();
+    // 2 edges of the triangle in uv space
+    Vector3f E1_uv = uv1 - uv0;
+    Vector3f E2_uv = uv2 - uv0;
 
-    Matrix2f FG;
-    FG << F.x(), F.y(), G.x(), G.y();
+    // Create Matrix using 3d points
+    // |E1.x, E1.y, E1.z|
+    // |E2.x, E2.y, E2.z|
+    MatrixXf M_3d(2, 3);
+    M_3d << E1.x(), E1.y(), E1.z(), E2.x(), E2.y(), E2.z();
 
+    // Same for using uv points
+    // |E1.x, E1.y|
+    // |E2.x, E2.y|
+    Matrix2f M_2d;
+    M_2d << E1_uv.x(), E1_uv.y(), E2_uv.x(), E2_uv.y();
+
+    // Get new tangent and bitangent by multiplying inverted M_2d by M_3d
+    // |T|       -1
+    // |B| = M_2d   * M_3d
     MatrixXf result(2, 3);
-    result = FG.inverse() * DE;
+    result = M_2d.inverse() * M_3d;
 
+    // Get the first row as the new tangent vector
     Vector3f new_T = result.row(0);
+
+    // ???
     new_T -= N * new_T.dot(N);
     new_T.normalize();
+
+    // New bitangent
     Vector3f bitangent = N.cross(new_T);
 
     T = new_T;
-    U = bitangent.normalized();
+    B = bitangent.normalized();
+
+    Matrix3f mat;
+    mat << T.x(), T.y(), T.z(), N.x(), N.y(), N.z(), B.x(), B.y(), B.z();
+    return mat;
 }
 
 Vector3f getPixelValue(const float u, const float v,
@@ -323,10 +365,8 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
             Vector3f T, B, N;
             N = normals[currentIndex];
 
-            computeTangentBasis(pp0, pp1, pp2, uv0, uv1, uv2, T, B, N);
-
             Matrix3f mat;
-            mat << T.x(), T.y(), T.z(), N.x(), N.y(), N.z(), B.x(), B.y(), B.z();
+            mat = computeTangentMatrix(pp0, pp1, pp2, uv0, uv1, uv2, T, B, N);
 
             float u = uv0.x();
             float v = uv0.y();
