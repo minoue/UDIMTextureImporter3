@@ -91,10 +91,10 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
  * @param [in] uv0 : current UV of triangle
  * @param [in] uv1 : previous UV of triangle
  * @param [in] uv2 : next UV of triangle
- * @param [out] T : current UV of triangle
- * @param [out] U : previous UV of triangle
- * @param [in] N : next UV of triangle
- * @return
+ * @param [out] T : Tangent
+ * @param [out] B : Bitangent
+ * @param [in] N : Normal
+ * @return : Tangent matrix
  */
 // https://stackoverflow.com/questions/5255806/how-to-calculate-tangent-and-binorma
 Matrix3f computeTangentMatrix(const Vector3f& P0, const Vector3f& P1,
