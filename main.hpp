@@ -25,6 +25,11 @@ struct FaceVertex {
     float v;
 };
 
+
+struct Point :Vector3f {
+    bool isDone = false;
+};
+
 struct Face {
     std::vector<FaceVertex> FaceVertices;
     size_t faceIndex;

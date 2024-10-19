@@ -191,7 +191,7 @@ Vector3f getPixelValue(const float u, const float v,
     return G;
 }
 
-void initMesh(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
+void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals, std::vector<Face>& faces)
 {
     int numVerts = mesh->m_vertexCount;
@@ -200,7 +200,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
         float x = mesh->m_vertices[i];
         float y = mesh->m_vertices[i + 1];
         float z = mesh->m_vertices[i + 2];
-        Vector3f b;
+        Point b;
         b << x, y, z;
         vertices.push_back(b);
     }
@@ -321,7 +321,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
     }
 }
 
-void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
+void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
     std::vector<Image>& texture_data)
@@ -354,9 +354,13 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
             size_t currentIndex = currentVertex->vertexIndex;
             size_t nextIndex = nextVertex->vertexIndex;
 
-            Vector3f& pp0 = vertices[currentIndex];
-            Vector3f& pp1 = vertices[previousIndex];
-            Vector3f& pp2 = vertices[nextIndex];
+            Point& pp0 = vertices[currentIndex];
+            Point& pp1 = vertices[previousIndex];
+            Point& pp2 = vertices[nextIndex];
+
+            if (pp0.isDone) {
+                continue;
+            }
 
             Vector3f& uv0 = currentVertex->uvw;
             Vector3f& uv1 = previousVertex->uvw;
@@ -394,6 +398,8 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
             }
             Vector3f new_pp = pp0 + displacement;
             tempVertices[currentIndex] = new_pp;
+
+            pp0.isDone = true;
         }
     }
 
@@ -404,7 +410,7 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
     }
 }
 
-void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
+void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
     std::vector<Image>& texture_data, char* channel)
@@ -422,7 +428,11 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
             FaceVertex& currentVertex = faceVertices[i];
             size_t currentIndex = currentVertex.vertexIndex;
 
-            Vector3f& pp0 = vertices[currentIndex];
+            Point& pp0 = vertices[currentIndex];
+            if (pp0.isDone) {
+                continue;
+            }
+
             Vector3f& uv0 = currentVertex.uvw;
 
             Vector3f N;
@@ -459,6 +469,7 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Vector3f>& vertices,
                 new_pp = pp0 + (N * displacement.z());
             }
             tempVertices[currentIndex] = new_pp;
+            pp0.isDone = true;
         }
     }
 
@@ -602,7 +613,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
     log << "Mesh obj has been created..." << std::endl;
 
     // Create data arrays
-    std::vector<Vector3f> vertices;
+    std::vector<Point> vertices;
     std::vector<Vector3f> normals;
     std::vector<Face> faces;
 
