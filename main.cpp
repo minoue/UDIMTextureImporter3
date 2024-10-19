@@ -133,7 +133,7 @@ Matrix3f computeTangentMatrix(const Vector3f& P0, const Vector3f& P1,
     Vector3f new_T = result.row(0);
 
     // ???
-    new_T -= N * new_T.dot(N);
+    // new_T -= N * new_T.dot(N);
     new_T.normalize();
 
     // New bitangent
