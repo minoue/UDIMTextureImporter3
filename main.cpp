@@ -2,13 +2,13 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <ranges>
 #include <stdio.h>
 #include <string.h>
 #include <vector>
-#include <format>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -54,7 +54,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
     // Create texture data
     int inc = 1;
 #pragma omp parallel for
-    for (int i = 0; i <numPaths; i++) {
+    for (int i = 0; i < numPaths; i++) {
         std::filesystem::path& path = paths[static_cast<size_t>(i)];
         std::string ext = path.extension().string();
 
@@ -73,7 +73,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         int udimCount = udim - 1000;
         data[static_cast<size_t>(udimCount) - 1] = img;
 
-        auto msg = std::format("{}/{} : " , inc, numPaths);
+        auto msg = std::format("{}/{} : ", inc, numPaths);
 
 #pragma omp atomic
         ++inc;
@@ -525,7 +525,8 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     }
 }
 
-int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float newMax) {
+int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float newMax)
+{
     float oldRange = oldMax - oldMin;
     float newRange = newMax - newMin;
     float newValue = ((oldValue - oldMin) * newRange / oldRange) + newMin;
@@ -536,7 +537,7 @@ int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float n
 void debugNormals(GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
 {
     size_t numVerts = normals.size();
-    for (size_t i=0; i<numVerts; i++) {
+    for (size_t i = 0; i < numVerts; i++) {
         Vector3f& nml = normals[i];
         float rf = nml.x();
         float gf = nml.y();
