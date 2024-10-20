@@ -47,7 +47,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         }
     }
 
-    data.resize(size_t(maxUDIM));
+    data.resize(static_cast<size_t>(maxUDIM));
 
     int numPaths = (int)paths.size();
 
@@ -55,7 +55,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
     int inc = 1;
 #pragma omp parallel for
     for (int i = 0; i <numPaths; i++) {
-        std::filesystem::path& path = paths[(size_t)i];
+        std::filesystem::path& path = paths[static_cast<size_t>(i)];
         std::string ext = path.extension().string();
 
         Image img;
@@ -71,7 +71,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
 
         int udim = Image::getUDIMfromPath(path.string());
         int udimCount = udim - 1000;
-        data[size_t(udimCount) - 1] = img;
+        data[static_cast<size_t>(udimCount) - 1] = img;
 
         auto msg = std::format("{}/{} : " , inc, numPaths);
 
@@ -153,18 +153,18 @@ Vector3f getPixelValue(const float u, const float v,
 {
     // Get pixel values by bilinear filtering
 
-    float float_width = (float)width;
-    float float_height = (float)height;
+    float float_width = static_cast<float>(width);
+    float float_height = static_cast<float>(height);
 
-    int x1 = int(std::round(float_width * u));
+    int x1 = static_cast<int>(std::round(float_width * u));
     int x2 = x1 + 1;
     int y1 = static_cast<int>(std::round(float_height * (1 - v)));
     int y2 = y1 + 1;
 
-    size_t target_pixel1 = size_t(((width * (y1 - 1) + x1) - 1) * nchannel);
-    size_t target_pixel2 = size_t(((width * (y1 - 1) + x2) - 1) * nchannel);
-    size_t target_pixel3 = size_t(((width * (y2 - 1) + x1) - 1) * nchannel);
-    size_t target_pixel4 = size_t(((width * (y2 - 1) + x2) - 1) * nchannel);
+    size_t target_pixel1 = static_cast<size_t>(((width * (y1 - 1) + x1) - 1) * nchannel);
+    size_t target_pixel2 = static_cast<size_t>(((width * (y1 - 1) + x2) - 1) * nchannel);
+    size_t target_pixel3 = static_cast<size_t>(((width * (y2 - 1) + x1) - 1) * nchannel);
+    size_t target_pixel4 = static_cast<size_t>(((width * (y2 - 1) + x2) - 1) * nchannel);
 
     Vector3f A;
     A << texture[target_pixel1], texture[target_pixel1 + 1],
@@ -195,7 +195,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals, std::vector<Face>& faces)
 {
     int numVerts = mesh->m_vertexCount;
-    vertices.reserve(size_t(numVerts));
+    vertices.reserve(static_cast<size_t>(numVerts));
     for (int i = 0; i < numVerts * 3; i += 3) {
         float x = mesh->m_vertices[i];
         float y = mesh->m_vertices[i + 1];
@@ -204,15 +204,14 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         b << x, y, z;
         vertices.push_back(b);
     }
-
     // Init normal array
-    normals.resize(size_t(numVerts));
+    normals.resize(static_cast<size_t>(numVerts));
     Vector3f zeroVec(0, 0, 0);
     std::fill(normals.begin(), normals.end(), zeroVec);
 
     // Face array
     int numFaces = mesh->m_faceCount;
-    faces.reserve(size_t(numFaces));
+    faces.reserve(static_cast<size_t>(numFaces));
 
     // Loop over all faces
     for (int n = 1; n <= numFaces; n++) {
@@ -227,18 +226,11 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         int vertexIndex3 = mesh->m_vertexIndices[arrayIndex3];
         int vertexIndex4 = mesh->m_vertexIndices[arrayIndex4];
 
-        Vector3f& P1 = vertices[size_t(vertexIndex1)];
-        Vector3f& P2 = vertices[size_t(vertexIndex2)];
-        Vector3f& P3 = vertices[size_t(vertexIndex3)];
-        Vector3f& P4 = vertices[size_t(vertexIndex4)];
+        Vector3f& P1 = vertices[static_cast<size_t>(vertexIndex1)];
+        Vector3f& P2 = vertices[static_cast<size_t>(vertexIndex2)];
+        Vector3f& P3 = vertices[static_cast<size_t>(vertexIndex3)];
+        Vector3f& P4 = vertices[static_cast<size_t>(vertexIndex4)];
 
-        // std::vector<float> p4;
-        // int numFaceVertex = 4;
-        // if (vertexIndex4 != -1) {
-        //     // std::vector<float> p4 = vertices[size_t(id4)];
-        //     numFaceVertex = 3;
-        // } else {
-        // }
         int u1_local = 8 * n - 8;
         int v1_local = 8 * n - 7;
         int u2_local = 8 * n - 6;
@@ -247,6 +239,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         int v3_local = 8 * n - 3;
         int u4_local = 8 * n - 2;
         int v4_local = 8 * n - 1;
+
         float u1 = mesh->m_uvs[u1_local];
         float v1 = mesh->m_uvs[v1_local];
         float u2 = mesh->m_uvs[u2_local];
@@ -256,26 +249,25 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         float u4 = mesh->m_uvs[u4_local];
         float v4 = mesh->m_uvs[v4_local];
 
-        // Face &f = faces[size_t(faceIndex)];
         Face f;
-        f.faceIndex = size_t(faceIndex);
+        f.faceIndex = static_cast<size_t>(faceIndex);
 
         FaceVertex FV1;
         FV1.pointPosition = P1;
         FV1.uvw << u1, v1;
-        FV1.vertexIndex = size_t(vertexIndex1);
+        FV1.vertexIndex = static_cast<size_t>(vertexIndex1);
         f.FaceVertices.push_back(FV1);
 
         FaceVertex FV2;
         FV2.pointPosition = P2;
         FV2.uvw << u2, v2;
-        FV2.vertexIndex = size_t(vertexIndex2);
+        FV2.vertexIndex = static_cast<size_t>(vertexIndex2);
         f.FaceVertices.push_back(FV2);
 
         FaceVertex FV3;
         FV3.pointPosition = P3;
         FV3.uvw << u3, v3;
-        FV3.vertexIndex = size_t(vertexIndex3);
+        FV3.vertexIndex = static_cast<size_t>(vertexIndex3);
         f.FaceVertices.push_back(FV3);
 
         // If not triangle
@@ -283,7 +275,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
             FaceVertex FV4;
             FV4.pointPosition = P4;
             FV4.uvw << u4, v4;
-            FV4.vertexIndex = size_t(vertexIndex4);
+            FV4.vertexIndex = static_cast<size_t>(vertexIndex4);
             f.FaceVertices.push_back(FV4);
         }
 
@@ -293,26 +285,26 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         Vector3f Vec1 = P2 - P1;
         Vector3f Vec2 = P4 - P1;
         Vector3f N1 = Vec1.cross(Vec2);
-        normals[size_t(vertexIndex1)] += N1;
+        normals[static_cast<size_t>(vertexIndex1)] += N1;
 
         // second point
         Vector3f Vec3 = P3 - P2;
         Vector3f Vec4 = P1 - P2;
         Vector3f N2 = Vec3.cross(Vec4);
-        normals[size_t(vertexIndex2)] += N2;
+        normals[static_cast<size_t>(vertexIndex2)] += N2;
 
         // third point
         Vector3f Vec5 = P4 - P3;
         Vector3f Vec6 = P2 - P3;
         Vector3f N3 = Vec5.cross(Vec6);
-        normals[size_t(vertexIndex3)] += N3;
+        normals[static_cast<size_t>(vertexIndex3)] += N3;
 
         // forth point
         if (vertexIndex4 != -1) {
             Vector3f Vec7 = P1 - P4;
-            Vector3f Vec8 = P3 - P4;
+            Vector3f Vec8 = P2 - P4;
             Vector3f N4 = Vec7.cross(Vec8);
-            normals[size_t(vertexIndex4)] += N4;
+            normals[static_cast<size_t>(vertexIndex4)] += N4;
         }
     }
 
@@ -403,7 +395,8 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         }
     }
 
-    for (size_t i = 0; i < size_t(vertices.size()) * 3; i += 3) {
+    size_t numVerts = vertices.size();
+    for (size_t i = 0; i < numVerts * 3; i += 3) {
         mesh->m_vertices[i] = tempVertices[i / 3].x();
         mesh->m_vertices[i + 1] = tempVertices[i / 3].y();
         mesh->m_vertices[i + 2] = tempVertices[i / 3].z();
@@ -473,7 +466,8 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         }
     }
 
-    for (size_t i = 0; i < size_t(vertices.size()) * 3; i += 3) {
+    size_t numVerts = vertices.size();
+    for (size_t i = 0; i < numVerts * 3; i += 3) {
         mesh->m_vertices[i] = tempVertices[i / 3].x();
         mesh->m_vertices[i + 1] = tempVertices[i / 3].y();
         mesh->m_vertices[i + 2] = tempVertices[i / 3].z();
@@ -517,9 +511,9 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
                 // Convert 4 8-bit int to a single 32 bit value
                 // https://stackoverflow.com/questions/65136404/c-how-to-store-four-8-bit-integers-as-a-32-bit-unsigned-integer
                 int m = 0;
-                int r = int(round(pow(rgb.x(), 1 / gamma) * 255.0));
-                int g = int(round(pow(rgb.y(), 1 / gamma) * 255.0));
-                int b = int(round(pow(rgb.z(), 1 / gamma) * 255.0));
+                int r = static_cast<int>(round(pow(rgb.x(), 1 / gamma) * 255.0));
+                int g = static_cast<int>(round(pow(rgb.y(), 1 / gamma) * 255.0));
+                int b = static_cast<int>(round(pow(rgb.z(), 1 / gamma) * 255.0));
                 uint32_t ui32 = (uint32_t(m & 0xFF) << 24) | (uint32_t(r & 0xFF) << 16) | (uint32_t(g & 0xFF) << 8) | uint32_t(b & 0xFF);
 
                 // replace color
@@ -591,7 +585,7 @@ void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& tex
                 Vector3f rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                     height, channels);
 
-                uint16_t r = uint16_t(round(rgb.x() * 65535.0));
+                uint16_t r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
 
                 // replace color
                 if (mesh->m_mask[currentIndex] != NULL) {
