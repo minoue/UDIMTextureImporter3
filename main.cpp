@@ -531,6 +531,35 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     }
 }
 
+int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float newMax) {
+    float oldRange = oldMax - oldMin;
+    float newRange = newMax - newMin;
+    float newValue = ((oldValue - oldMin) * newRange / oldRange) + newMin;
+    int intValue = int(round(newValue));
+    return intValue;
+}
+
+void debugNormals(GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
+{
+    size_t numVerts = normals.size();
+    for (size_t i=0; i<numVerts; i++) {
+        Vector3f& nml = normals[i];
+        float rf = nml.x();
+        float gf = nml.y();
+        float bf = nml.z();
+        int r = remapValue(rf, -1, 1, 0, 255);
+        int g = remapValue(gf, -1, 1, 0, 255);
+        int b = remapValue(bf, -1, 1, 0, 255);
+        int m = 0;
+        uint32_t ui32 = (uint32_t(m & 0xFF) << 24) | (uint32_t(r & 0xFF) << 16) | (uint32_t(g & 0xFF) << 8) | uint32_t(b & 0xFF);
+
+        // replace color
+        if (mesh->m_mrgb[i] != NULL) {
+            mesh->m_mrgb[i] = ui32;
+        }
+    }
+}
+
 void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
 {
     for (auto& f : faces) {
