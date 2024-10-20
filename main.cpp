@@ -312,7 +312,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
             Vector3f Vec7 = P1 - P4;
             Vector3f Vec8 = P3 - P4;
             Vector3f N4 = Vec7.cross(Vec8);
-            normals[size_t(vertexIndex3)] += N4;
+            normals[size_t(vertexIndex4)] += N4;
         }
     }
 
