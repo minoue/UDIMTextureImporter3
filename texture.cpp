@@ -56,10 +56,10 @@ void Image::loadExr(const std::string& path)
         }
     } else {
         int size = width * height * nchannels;
-        this->pixels.resize(size_t(size));
+        this->pixels.resize(static_cast<size_t>(size));
         for (int i = 0; i < size; i++) {
             float x = out[i];
-            this->pixels[size_t(i)] = x;
+            this->pixels[static_cast<size_t>(i)] = x;
         }
 
         free(out); // release memory of image data
@@ -80,9 +80,9 @@ void Image::loadTif(const std::string& path)
         TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &nchannels);
         TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bitDepth);
 
-        this->nchannels = int(nchannels);
-        this->width = int(width);
-        this->height = int(height);
+        this->nchannels = static_cast<int>(nchannels);
+        this->width = static_cast<int>(width);
+        this->height = static_cast<int>(height);
         this->pixels.reserve(width * height * nchannels);
 
         std::string chaStr = "Number of channels: " + std::to_string(nchannels);
