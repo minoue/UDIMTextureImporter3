@@ -103,6 +103,10 @@ void Image::loadTif(const std::string& path)
                     this->pixels.push_back(r);
                     this->pixels.push_back(g);
                     this->pixels.push_back(b);
+                    if (nchannels == 4) {
+                        float a = static_cast<float*>(buf)[col * uint16_t(nchannels) + 3];
+                        this->pixels.push_back(a);
+                    }
                 } else if (bitDepth == 16) {
                     uint16_t r = static_cast<uint16_t*>(buf)[col * nchannels + 0];
                     uint16_t g = static_cast<uint16_t*>(buf)[col * nchannels + 1];
@@ -110,6 +114,10 @@ void Image::loadTif(const std::string& path)
                     this->pixels.push_back(float(r / 65535.0));
                     this->pixels.push_back(float(g / 65535.0));
                     this->pixels.push_back(float(b / 65535.0));
+                    if (nchannels == 4) {
+                        uint16_t a = static_cast<uint16_t*>(buf)[col * nchannels + 3];
+                        this->pixels.push_back(float(a / 65535.0));
+                    }
                 } else {
                     // 8-bit
                     uint16_t r = static_cast<uint8_t*>(buf)[col * nchannels + 0];
@@ -118,6 +126,10 @@ void Image::loadTif(const std::string& path)
                     this->pixels.push_back(float(r / 255.0));
                     this->pixels.push_back(float(g / 255.0));
                     this->pixels.push_back(float(b / 255.0));
+                    if (nchannels == 4) {
+                        uint16_t a = static_cast<uint8_t*>(buf)[col * nchannels + 3];
+                        this->pixels.push_back(float(a / 255.0));
+                    }
                 }
             }
         }
