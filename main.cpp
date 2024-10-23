@@ -20,6 +20,11 @@
 
 using namespace Eigen;
 
+/**
+ * @brief Split texture path array
+ * @param [in] pathStringArray : Long string containing paths eg. "C:/path/image.1001.exr C:/path/image.1002.exr C:..."
+ * @param [in] data : texture data
+ */
 void initTextures(std::string& pathStringArray, std::vector<Image>& data)
 {
     using std::operator""sv;
@@ -147,12 +152,19 @@ Matrix3f computeTangentMatrix(const Vector3f& P0, const Vector3f& P1,
     return mat;
 }
 
+/**
+ * @brief Get RGB values from textures by u and v value, by bilinear filtering
+ * @param [in] u : u value
+ * @param [in] v : v value
+ * @param [in] texture : 1d array for texture pixels
+ * @param [in] width : image width
+ * @param [in] height : image height
+ * @param [in] nchannel : Number of channels, usually 3 or 4
+ */
 Vector3f getPixelValue(const float u, const float v,
     const std::vector<float>& texture, const int width,
     const int height, const int nchannel)
 {
-    // Get pixel values by bilinear filtering
-
     float float_width = static_cast<float>(width);
     float float_height = static_cast<float>(height);
 
@@ -191,6 +203,13 @@ Vector3f getPixelValue(const float u, const float v,
     return G;
 }
 
+/**
+ * @brief Create necessary data from the mesh and store to containers
+ * @param [in] mesh : GoZ mesh object
+ * @param [out] vertices : container for vertex positions
+ * @param [out] normals : container for vertex normals
+ * @param [out] faces : container for face objs
+ */
 void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals, std::vector<Face>& faces)
 {
@@ -313,6 +332,14 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     }
 }
 
+/**
+ * @brief Get tangent normals from textures and apply to the goz mesh vertex positions
+ * @param [in] mesh : GoZ mesh data
+ * @param [in] vertices : vertex array extracted from the goz mesh
+ * @param [in] normals : normal array calculated by the goz mesh
+ * @param [in] faces : Face array
+ * @param [in] data : pixel data for each texture
+ */
 void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
@@ -403,6 +430,16 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     }
 }
 
+/**
+ * @brief Get float displacement values from textures and apply to the goz mesh vertex positions
+ * @param [in] mesh : GoZ mesh data
+ * @param [in] vertices : vertex array extracted from the goz mesh
+ * @param [in] normals : normal array calculated by the goz mesh
+ * @param [in] faces : Face array
+ * @param [in] data : pixel data for each texture
+ * @param [in] channel : ID to choose channels, "R", "G", or "B"
+ * @param [in] mid-value : mid value, default is 0
+ */
 void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
@@ -474,6 +511,13 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     }
 }
 
+/**
+ * @brief Get RGB values from textures and apply to the goz mesh m_rgb
+ * @param [in] mesh : GoZ mesh data
+ * @param [in] faces : Face array
+ * @param [in] data : pixel data for each texture
+ * @param [in] gamma : gamma value, default is 1, use 2.2 for loading linear textures
+ */
 void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     std::vector<Image>& texture_data, float gamma)
 {
@@ -534,6 +578,11 @@ int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float n
     return intValue;
 }
 
+/**
+ * @brief For dubug. Bake world space normal color to the mesh
+ * @param [in] mesh : GoZ mesh data
+ * @param [in] normals : normal vector array
+ */
 void debugNormals(GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
 {
     size_t numVerts = normals.size();
@@ -555,6 +604,12 @@ void debugNormals(GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
     }
 }
 
+/**
+ * @brief Apply mask from B/W textures
+ * @param [in] mesh : GoZ mesh data
+ * @param [in] faces : Face array
+ * @param [in] data : pixel data for each texture
+ */
 void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
 {
     for (auto& f : faces) {
@@ -596,6 +651,17 @@ void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& tex
         }
     }
 }
+
+/**
+ * @brief main function
+ * @param [in] GoZFilePath : File path to the temp file
+ * @param [in] value : value for gamma or mid-point
+ * @param [in] pOptBuffer1 : next point of triangle
+ * @param [in] optBuffer1Size : Unused
+ * @param [in] pOptBuffer2 : channel ID
+ * @param [in] optBuffer2Size : Unused
+ * @param [in] zData : Unused
+ */
 float EXPORT importUDIM(char* GoZFilePath, double value,
     char* pOptBuffer1, [[maybe_unused]] int optBuffer1Size,
     char* pOptBuffer2, [[maybe_unused]] int optBuffer2Size,

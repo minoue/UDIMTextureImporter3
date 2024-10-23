@@ -11,6 +11,12 @@ Image::Image() {};
 
 Image::~Image() {};
 
+/**
+ * @brief Convert uv values to values of UDIM local. eg. (1.5, 1.5) -> (0.5, 0.5)
+ * @param[out] localUV UDIM localizwed UV values
+ * @param[in] u global u value
+ * @param[in] v global v value
+ */
 void Image::localizeUV(float* localUV, const float& u, const float& v)
 {
     float u_local = u - floor(u);
@@ -19,6 +25,11 @@ void Image::localizeUV(float* localUV, const float& u, const float& v)
     localUV[1] = v_local;
 }
 
+/**
+ * @brief Get UDIM from path string
+ * @param[in] path file path, eg. C:/path/to/texture.1001.exr
+ * @return : UDIM number as int, eg. 1001, 1011
+ */
 int Image::getUDIMfromPath(const std::string& path)
 {
     std::filesystem::path tempPath = path;
@@ -29,9 +40,14 @@ int Image::getUDIMfromPath(const std::string& path)
     return udim;
 }
 
+/**
+ * @brief Get UDIM from UV value
+ * @param[in] u u value
+ * @param[in] v v value
+ * @return : UDIM number without 1001, eg. 1001 is 1, 1011 is 11
+ */
 size_t Image::getUDIMfromUV(float u, float v)
 {
-    // Retrun UDIM number without 1000, eg. 1001 is 1, 1011 is 11
     size_t U = static_cast<size_t>(ceil(u));
     size_t V = static_cast<size_t>(floor(v)) * 10;
     return U + V;
