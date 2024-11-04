@@ -1,4 +1,4 @@
-// UI version 0.1.4
+// UI version 0.1.5
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/GoUDIM_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/GoUDIM_out.Goz"]]
@@ -111,6 +111,7 @@
     1, // Width
     24, // Height
 ]             
+[IEnable, "ZPlugin:GoUDIM:Normal Displacement:R"]
 
 [ISwitch,
     "ZPlugin:GoUDIM:Normal Displacement:G",
@@ -127,6 +128,7 @@
     1, // Width
     24, // Height
 ]
+[IEnable, "ZPlugin:GoUDIM:Normal Displacement:G"]
 
 [ISwitch,
     "ZPlugin:GoUDIM:Normal Displacement:B",
@@ -143,6 +145,7 @@
     1, // Width
     24, // Height
 ]
+[IEnable, "ZPlugin:GoUDIM:Normal Displacement:B"]
 
 [ISlider, "ZPlugin:GoUDIM:Normal Displacement:Mid Value",
     0, // initial value
