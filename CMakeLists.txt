@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(GoUDIM)
+project(UDIMTextureImporter3)
 
 set(DLL_VERSION 0.2.11)
 
