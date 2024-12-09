@@ -1,5 +1,5 @@
-#ifndef __GoDSP_h__
-#define __GoDSP_h__
+#ifndef __UDIMTextureImporter3_h__
+#define __UDIMTextureImporter3_h__
 
 #include <vector>
 
@@ -25,8 +25,7 @@ struct FaceVertex {
     float v;
 };
 
-
-struct Point :Vector3f {
+struct Point : Vector3f {
     bool isDone = false;
 };
 
@@ -47,4 +46,4 @@ float EXPORT importUDIM(char* textFromZBrush,
 }
 #endif
 
-#endif /* __GoDSP_h__ */
+#endif /* __UDIMTextureImporter3_h__ */

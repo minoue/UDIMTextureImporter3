@@ -1,4 +1,4 @@
-# GoUDIM
+# UDIMTextureImporter3
 Import UDIM displacement('sculpt using maps' in Mudbox), color, and mask textures.
 
 **Only avaiable on Windows**
@@ -8,21 +8,21 @@ Import UDIM displacement('sculpt using maps' in Mudbox), color, and mask texture
 ### Windows10 & ZBrush2022
 1. Go to [release page](), download the latest and extract it.
 2. Move **tiff.dll**, **zlib.dll**, and **libdeflate.dll** to the same directory as ZBrush.exe. (For example. `C:\Program Files\Pixologic\ZBrush 2022\tiff.dll`)
-3. Move `GoUDIM.zsc` to `ZPlugs64` folder.
-4. Move `GoUDIM` to `ZPlugs64` folder.
+3. Move `UDIMTextureImporter3.zsc` to `ZPlugs64` folder.
+4. Move `UDIMTextureImporter3` to `ZPlugs64` folder.
 
 ```
 ZStartup/
 ├─ ZPlugs64/
-│  ├─ GoUDIM/
+│  ├─ UDIMTextureImporter3/
 │  │  ├─ ZFileUtils/
 │  │  │  ├─ ZFileUtils.dll
-│  │  ├─ GoUDIM.dll
-│  ├─ GoUDIM.zsc
+│  │  ├─ UDIMTextureImporter3.dll
+│  ├─ UDIMTextureImporter3.zsc
 ```
 
 ## Usage
-Go to `ZPlugin` -> `GoUDIM`.
+Go to `ZPlugin` -> `UDIMTextureImporter3`.
 
 Make sure textures are in UDIM naming convention (eg. `filename.1001.tif`, `filename.1002.exr`, etc),
 

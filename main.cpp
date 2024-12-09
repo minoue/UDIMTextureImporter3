@@ -676,7 +676,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
     std::filesystem::path path = GoZFilePath;
 
     // Create log file
-    path.replace_filename("GoUDIM.log");
+    path.replace_filename("UDIMTextureImporter3.log");
     std::ofstream log(path.string());
     log.clear();
 
@@ -733,7 +733,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
 
     // write mesh
     std::cout << "5/5 : Writing mesh..." << std::endl;
-    path.replace_filename("GoUDIM_out.GoZ");
+    path.replace_filename("UDIMTextureImporter3_out.GoZ");
     mesh->writeMesh(path.string().c_str());
     log << "Mesh has been saved." << std::endl;
 

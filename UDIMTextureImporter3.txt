@@ -1,10 +1,10 @@
 // UI version 0.1.5
 
-[VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/GoUDIM_in.GoZ"]]
-[VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/GoUDIM_out.Goz"]]
+[VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
+[VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
 
-[VarDef, dllPath, "ZBRUSH_ZSTARTUP\ZPlugs64\GoUDIM\GoUDIM.dll"]
-[VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\GoUDIM\ZFileUtils\ZFileUtils64.dll"]
+[VarDef, dllPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3\UDIMTextureImporter3.dll"]
+[VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3\ZFileUtils\ZFileUtils64.dll"]
 
 [VarDef, err, 0] // 0: Good, 1: Bad
 // [VarDef, fileCount, 0]
@@ -21,11 +21,11 @@
     [Exit]
 ]
 
-[ISubPalette,"ZPlugin:GoUDIM"]
+[ISubPalette,"ZPlugin:UDIMTextureImporter3"]
 
-[ISubPalette, “ZPlugin:GoUDIM:Vector Displacement”, 0]
+[ISubPalette, “ZPlugin:UDIMTextureImporter3:Vector Displacement”, 0]
 
-[IButton, "ZPlugin:GoUDIM:Vector Displacement:Import", "Annotation here",
+[IButton, "ZPlugin:UDIMTextureImporter3:Vector Displacement:Import", "Annotation here",
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
@@ -39,7 +39,7 @@
     // [Note, [StrMerge, fileCount," files selected"],,2]
 
     [If, fileCount > 0,
-        [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
+        [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [VarSet, channel, "RGB"]
         [MemCreate, MemChannel, 256, 0]
         [MemWriteString, MemChannel, channel, 0]
@@ -94,15 +94,15 @@
         // [Note, "Done"]
 ]
 
-[ISubPalette, “ZPlugin:GoUDIM:Normal Displacement”, 0]
+[ISubPalette, “ZPlugin:UDIMTextureImporter3:Normal Displacement”, 0]
 
 [ISwitch,
-    "ZPlugin:GoUDIM:Normal Displacement:R",
+    "ZPlugin:UDIMTextureImporter3:Normal Displacement:R",
     1,
     "Switch 1",
     // on command
-    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:G"]
-    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:B"]
+    [IUnPress, "ZPlugin:UDIMTextureImporter3:Normal Displacement:G"]
+    [IUnPress, "ZPlugin:UDIMTextureImporter3:Normal Displacement:B"]
     [VarSet, channel, "R"]
     ,
     // off command
@@ -111,15 +111,15 @@
     1, // Width
     24, // Height
 ]             
-[IEnable, "ZPlugin:GoUDIM:Normal Displacement:R"]
+[IEnable, "ZPlugin:UDIMTextureImporter3:Normal Displacement:R"]
 
 [ISwitch,
-    "ZPlugin:GoUDIM:Normal Displacement:G",
+    "ZPlugin:UDIMTextureImporter3:Normal Displacement:G",
     0,
     "Switch 1",
     // on command
-    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:R"]
-    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:B"]
+    [IUnPress, "ZPlugin:UDIMTextureImporter3:Normal Displacement:R"]
+    [IUnPress, "ZPlugin:UDIMTextureImporter3:Normal Displacement:B"]
     [VarSet, channel, "G"]
     ,
     // off command
@@ -128,15 +128,15 @@
     1, // Width
     24, // Height
 ]
-[IEnable, "ZPlugin:GoUDIM:Normal Displacement:G"]
+[IEnable, "ZPlugin:UDIMTextureImporter3:Normal Displacement:G"]
 
 [ISwitch,
-    "ZPlugin:GoUDIM:Normal Displacement:B",
+    "ZPlugin:UDIMTextureImporter3:Normal Displacement:B",
     0,
     "Switch 1",
     // on command
-    [IUnPress, "ZPlugin:GoUDIM:Normal Displacement:R"]
-    [IUnPress, "ZPlugin:GoUDIM:Normal DIsplacement:G"]
+    [IUnPress, "ZPlugin:UDIMTextureImporter3:Normal Displacement:R"]
+    [IUnPress, "ZPlugin:UDIMTextureImporter3:Normal DIsplacement:G"]
     [VarSet, channel, "B"]
     ,
     // off command
@@ -145,21 +145,21 @@
     1, // Width
     24, // Height
 ]
-[IEnable, "ZPlugin:GoUDIM:Normal Displacement:B"]
+[IEnable, "ZPlugin:UDIMTextureImporter3:Normal Displacement:B"]
 
-[ISlider, "ZPlugin:GoUDIM:Normal Displacement:Mid Value",
+[ISlider, "ZPlugin:UDIMTextureImporter3:Normal Displacement:Mid Value",
     0, // initial value
     0.1, // Resolution
     0, // Min value
     1.0, // Max value
     , // Info text
-    [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]], // Command group
+    [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]], // Command group
     0,
     1,
     0
 ]
 
-[IButton, "ZPlugin:GoUDIM:Normal Displacement:Import", "Annotation here",
+[IButton, "ZPlugin:UDIMTextureImporter3:Normal Displacement:Import", "Annotation here",
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
@@ -173,7 +173,7 @@
     // [Note, [StrMerge, fileCount," files selected"],,2]
 
     [If, fileCount > 0,
-        [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
+        [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [MemCreate, MemChannel, 256, 0]
         [MemWriteString, MemChannel, channel, 0]
 
@@ -226,9 +226,9 @@
         // [Note, "Done"]
 ]
 
-[ISubPalette, “ZPlugin:GoUDIM:Color”, 0]
+[ISubPalette, “ZPlugin:UDIMTextureImporter3:Color”, 0]
 
-[IButton, "ZPlugin:GoUDIM:Color:Import", "Annotation here",
+[IButton, "ZPlugin:UDIMTextureImporter3:Color:Import", "Annotation here",
     
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
@@ -243,8 +243,8 @@
     // [Note, [StrMerge, fileCount," files selected"],,2]
 
     [If, fileCount > 0,
-        // [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
-        [VarSet, gamma, [IGet, "ZPlugin:GoUDIM:Gamma"]]
+        // [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
+        [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
 
         [VarSet, channel, "COL"]
         [MemCreate, MemChannel, 256, 0]
@@ -299,21 +299,21 @@
         // [Note, "Done"]
 ]
 
-[ISlider, "ZPlugin:GoUDIM:Color:Gamma",
+[ISlider, "ZPlugin:UDIMTextureImporter3:Color:Gamma",
     1, // initial value
     0.1, // Resolution
     1, // Min value
     2.2, // Max value
     , // Info text
-    [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Gamma"]], // Command group
+    [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]], // Command group
     0,
     1,
     0
 ]
 
-[ISubPalette, “ZPlugin:GoUDIM:Mask”, 0]
+[ISubPalette, “ZPlugin:UDIMTextureImporter3:Mask”, 0]
 
-[IButton, "ZPlugin:GoUDIM:Mask:Import", "Annotation here",
+[IButton, "ZPlugin:UDIMTextureImporter3:Mask:Import", "Annotation here",
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
@@ -327,8 +327,8 @@
     // [Note, [StrMerge, fileCount," files selected"],,2]
 
     [If, fileCount > 0,
-        // [VarSet, midValue, [IGet, "ZPlugin:GoUDIM:Mid Value"]]
-        [VarSet, gamma, [IGet, "ZPlugin:GoUDIM:Gamma"]]
+        // [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
+        [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
 
         [VarSet, channel, "MSK"]
         [MemCreate, MemChannel, 256, 0]
