@@ -1,36 +1,46 @@
 # UDIMTextureImporter3
 Import UDIM displacement('sculpt using maps' in Mudbox), color, and mask textures.
 
-**Only avaiable on Windows**
+**Windows only, no plan to support macOS**
 
 
 ## Install
-### Windows10 & ZBrush2022
+### Windows10/11 & ZBrush2022
 1. Go to [release page](), download the latest and extract it.
 2. Move **tiff.dll**, **zlib.dll**, and **libdeflate.dll** to the same directory as ZBrush.exe. (For example. `C:\Program Files\Pixologic\ZBrush 2022\tiff.dll`)
 3. Move `UDIMTextureImporter3.zsc` to `ZPlugs64` folder.
 4. Move `UDIMTextureImporter3` to `ZPlugs64` folder.
 
+So they should be placed like this
 ```
-ZStartup/
-├─ ZPlugs64/
-│  ├─ UDIMTextureImporter3/
-│  │  ├─ ZFileUtils/
-│  │  │  ├─ ZFileUtils.dll
-│  │  ├─ UDIMTextureImporter3.dll
-│  ├─ UDIMTextureImporter3.zsc
+└── ZBrush 2022/
+    ├── ZBrush.exe
+    ├── tiff.dll
+    ├── zlib.dll
+    ├── deflate.dll
+    └── ZStartup/
+        └── ZPlugs64/
+            ├── UDIMTextureImporter3.zsc
+            └── UDIMTextureImporter3/
+                ├── UDIMTextureImporter3.dll
+                └── ZFileUtils/
+                    └── ZFileUtils64.dll
 ```
 
 ## Usage
 Go to `ZPlugin` -> `UDIMTextureImporter3`.
 
-Make sure textures are in UDIM naming convention (eg. `filename.1001.tif`, `filename.1002.exr`, etc),
+Make sure textures are in **UDIM naming convention (eg. `filename.1001.tif`, `filename.1002.exr`, etc)**,
 
 ### Supported image format
 #### Vector/Normal Displacement
 Images need to be exported from ZBrush/Mudbox.
 * 32 bit tif/tiff (compression: None, and Deflate, LZW with zlib and deflate lib)
 * 16 bit FP exr
+* For tangent space vector displacement, textures need to be exported in the following settings.
+    * Mid value 0.0
+    * ZBrush: FlipAndSwitch and TangentFlipAndSwitch: 25
+    * Mudbox: Absolute tangent
 
 #### Color
 * 8/16 bit tiff/exr
