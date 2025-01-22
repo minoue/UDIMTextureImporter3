@@ -1,4 +1,4 @@
-// UI version 0.1.5
+// UI version 0.1.6
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
@@ -13,6 +13,7 @@
 [VarDef, gamma, 0]
 [VarDef, midValue, 0]
 [VarDef, channel, ""]
+[VarDef, toolName, ""]
 
 [If, [FileExists, [Var, ZFileUtilsPath]],
     // [Note, "ZFileUtils found"]
@@ -29,6 +30,9 @@
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
+
+    // get orig tool name
+    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
 
     [VarDef, dialogTitle, "Please select image files"]
     [VarSet, fileExt, "tif,tiff,exr"]
@@ -83,6 +87,10 @@
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
         [IPress, Tool:Import]
+
+        // set orig tool name
+        [ToolSetPath, , [Var, toolName]]
+
         , // else
         [Note, "no output file found" , , 2]
     ]
@@ -163,6 +171,9 @@
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
+    
+    // get orig tool name
+    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
 
     [VarDef, dialogTitle, "Please select image files"]
     [VarSet, fileExt, "tif,tiff,exr"]
@@ -215,6 +226,10 @@
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
         [IPress, Tool:Import]
+        
+        // set orig tool name
+        [ToolSetPath, , [Var, toolName]]
+
         , // else
         [Note, "no output file found" , , 2]
     ]
@@ -233,6 +248,9 @@
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
+    
+    // get orig tool name
+    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
 
     [VarDef, dialogTitle, "Please select image files"]
     [VarSet, fileExt, "tif,tiff,exr"]
@@ -288,6 +306,10 @@
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
         [IPress, Tool:Import]
+        
+        // set orig tool name
+        [ToolSetPath, , [Var, toolName]]
+
         , // else
         [Note, "no output file found" , , 2]
     ]
@@ -317,6 +339,9 @@
     [IConfig,2022]
     [FileNameSetNext,[Var, GoZInputPath]]
     [IPress, Tool:Export]
+
+    // get orig tool name
+    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
 
     [VarDef, dialogTitle, "Please select image files"]
     [VarSet, fileExt, "tif,tiff,exr"]
@@ -372,6 +397,10 @@
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
         [IPress, Tool:Import]
+        
+        // set orig tool name
+        [ToolSetPath, , [Var, toolName]]
+
         , // else
         [Note, "no output file found" , , 2]
     ]
