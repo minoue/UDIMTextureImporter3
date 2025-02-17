@@ -4,11 +4,11 @@ project(UDIMTextureImporter3)
 set(DLL_VERSION 0.2.11)
 
 set(SOURCE_FILES
-    main.cpp
-    texture.cpp
-    sdk/GoZ_Mesh.cpp
-    sdk/GoZ_Utils.cpp
-    miniz.c
+    src/main.cpp
+    src/texture.cpp
+    src/sdk/GoZ_Mesh.cpp
+    src/sdk/GoZ_Utils.cpp
+    src/miniz.c
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -64,6 +64,8 @@ endif()
 set(INSTALL_DIR "../")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+target_include_directories(${PROJECT_NAME} PUBLIC src)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ${PLUGIN_SUFFIX})
 if (TIFF_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
