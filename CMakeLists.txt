@@ -20,8 +20,6 @@ if (_cpp_latest_flag_supported)
     add_compile_options("/std:c++latest")
 endif()
 
-set(PLUGIN_SUFFIX ".dll")
-
 # OpenMP
 find_package(OpenMP)
 if (OPENMP_CXX_FOUND)
@@ -56,15 +54,12 @@ set(INSTALL_DIR "../")
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ${PLUGIN_SUFFIX})
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
 if (TIFF_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
 else ()
     target_link_libraries(${PROJECT_NAME} PRIVATE tiff)
 endif()
 
-install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION ../
-        LIBRARY DESTINATION ../)
-
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ../ LIBRARY DESTINATION ../)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
