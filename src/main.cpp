@@ -443,7 +443,7 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
 void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
-    std::vector<Image>& texture_data, char* channel)
+    std::vector<Image>& texture_data, char* channel, float midValue)
 {
     std::vector<Vector3f> tempVertices;
     tempVertices.resize(vertices.size());
@@ -492,11 +492,11 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
             }
             Vector3f new_pp;
             if (*channel == 'R') {
-                new_pp = pp0 + (N * displacement.x());
+                new_pp = pp0 + (N * (displacement.x() - midValue));
             } else if (*channel == 'G') {
-                new_pp = pp0 + (N * displacement.y());
+                new_pp = pp0 + (N * (displacement.y() - midValue));
             } else {
-                new_pp = pp0 + (N * displacement.z());
+                new_pp = pp0 + (N * (displacement.z() - midValue));
             }
             tempVertices[currentIndex] = new_pp;
             pp0.isDone = true;
@@ -727,7 +727,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
         log << "Mask applied" << std::endl;
     } else {
         std::cout << "4/5 : Applying normal displacement..." << std::endl;
-        applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel);
+        applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel, float(value));
         log << "Normal displacement done" << std::endl;
     }
 
