@@ -1,10 +1,10 @@
-// UI version 0.1.6
+// UI version 0.1.7
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
 
-[VarDef, dllPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3\UDIMTextureImporter3.dll"]
-[VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3\ZFileUtils\ZFileUtils64.dll"]
+[VarDef, dllPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3Data\UDIMTextureImporter3.dll"]
+[VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3Data\ZFileUtils\ZFileUtils64.dll"]
 
 [VarDef, err, 0] // 0: Good, 1: Bad
 // [VarDef, fileCount, 0]
