@@ -1,8 +1,15 @@
 # UDIMTextureImporter3
-Import UDIM displacement('sculpt using maps' in Mudbox), color, and mask textures.
+Import UDIM displacement(**sculpt using maps** in Mudbox), color, and mask textures.
 
-**Windows only, no plan to support macOS**
+NOTE: **Windows only**
 
+![](https://raw.githubusercontent.com/minoue/UDIMTextureImporter/main/img/demo.gif)
+
+**Resculpted mesh vs the orignal**:
+If everything(mesh, UVs, Smooth options, map settings, etc) are all correct and consistent, then the result should be pretty close to the original, still you may have some lines around the UV borders.
+![](https://raw.githubusercontent.com/minoue/UDIMTextureImporter/main/img/compare.gif)
+
+![](https://raw.githubusercontent.com/minoue/UDIMTextureImporter/main/img/edge.gif)
 
 ## Install
 ### Windows10/11 & ZBrush2022
