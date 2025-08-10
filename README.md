@@ -14,7 +14,7 @@ If everything(mesh, UVs, Smooth options, map settings, etc) are all correct and 
 ## Install
 ### Windows10/11 & ZBrush2022
 1. Go to [release page](https://github.com/minoue/UDIMTextureImporter3/releases), download the latest and extract it.
-2. Move **tiff.dll**, **zlib.dll**, and **libdeflate.dll** to the same directory as ZBrush.exe. (For example. `C:\Program Files\Pixologic\ZBrush 2022\tiff.dll`)
+2. Move **tiff.dll**, **zlib.dll**, and **deflate.dll** to the same directory as ZBrush.exe. (For example. `C:\Program Files\Pixologic\ZBrush 2022\tiff.dll`)
 3. Move `UDIMTextureImporter3_2022.zsc` to `ZPlugs64` folder.
 4. Move `UDIMTextureImporter3Data` folder to `ZPlugs64` folder.
 
