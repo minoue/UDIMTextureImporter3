@@ -1,4 +1,4 @@
-// UI version 0.1.7
+// UI version 0.1.8
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
@@ -156,7 +156,7 @@
 [IEnable, "ZPlugin:UDIMTextureImporter3:Normal Displacement:B"]
 
 [ISlider, "ZPlugin:UDIMTextureImporter3:Normal Displacement:Mid Value",
-    0, // initial value
+    0.5, // initial value
     0.1, // Resolution
     0, // Min value
     1.0, // Max value
