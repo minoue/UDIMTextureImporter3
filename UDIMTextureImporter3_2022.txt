@@ -1,4 +1,4 @@
-// UI version 0.1.8
+// UI version 0.1.9
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
@@ -7,13 +7,15 @@
 [VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3Data\ZFileUtils\ZFileUtils64.dll"]
 
 [VarDef, err, 0] // 0: Good, 1: Bad
-// [VarDef, fileCount, 0]
+[VarDef, fileCount, 0]
 [VarDef, fileName, ""]
+[VarDef, fileExt, ""]
 [VarDef, channel, "R"]
 [VarDef, gamma, 0]
 [VarDef, midValue, 0]
 [VarDef, channel, ""]
 [VarDef, toolName, ""]
+[VarDef, dialogTitle, ""]
 
 [If, [FileExists, [Var, ZFileUtilsPath]],
     // [Note, "ZFileUtils found"]
@@ -22,27 +24,28 @@
     [Exit]
 ]
 
+[RoutineDef, openImageFiles,
+    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
+    [VarSet, dialogTitle, "Please select image files"]
+    [VarSet, fileExt, "tif,tiff,exr"]
+    [MemCreate, ZFileUTils_FileExt, 256, 0]
+    [MemWriteString, ZFileUTils_FileExt, fileExt, 0]
+    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
+    [MemDelete, ZFileUTils_FileExt]
+, text]
+
 [ISubPalette,"ZPlugin:UDIMTextureImporter3"]
 
 [ISubPalette, “ZPlugin:UDIMTextureImporter3:Vector Displacement”, 0]
 
 [IButton, "ZPlugin:UDIMTextureImporter3:Vector Displacement:Import", "Annotation here",
     [IConfig,2022]
-    [FileNameSetNext,[Var, GoZInputPath]]
-    [IPress, Tool:Export]
-
-    // get orig tool name
-    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
-
-    [VarDef, dialogTitle, "Please select image files"]
-    [VarSet, fileExt, "tif,tiff,exr"]
-    [MemCreate, ZFileUTils_FileExt, 256, 0]
-    [MemWriteString, ZFileUTils_FileExt, fileExt, 0]
-    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
-    [MemDelete, ZFileUTils_FileExt]
-    // [Note, [StrMerge, fileCount," files selected"],,2]
+    [RoutineCall, openImageFiles, "dummyText"]
 
     [If, fileCount > 0,
+        [FileNameSetNext,[Var, GoZInputPath]]
+        [IPress, Tool:Export]
+
         [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [VarSet, channel, "RGB"]
         [MemCreate, MemChannel, 256, 0]
@@ -169,21 +172,12 @@
 
 [IButton, "ZPlugin:UDIMTextureImporter3:Normal Displacement:Import", "Annotation here",
     [IConfig,2022]
-    [FileNameSetNext,[Var, GoZInputPath]]
-    [IPress, Tool:Export]
-    
-    // get orig tool name
-    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
-
-    [VarDef, dialogTitle, "Please select image files"]
-    [VarSet, fileExt, "tif,tiff,exr"]
-    [MemCreate, ZFileUTils_FileExt, 256, 0]
-    [MemWriteString, ZFileUTils_FileExt, fileExt,0]
-    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
-    [MemDelete, ZFileUTils_FileExt]
-    // [Note, [StrMerge, fileCount," files selected"],,2]
+    [RoutineCall, openImageFiles, "dummyText"]
 
     [If, fileCount > 0,
+        [FileNameSetNext,[Var, GoZInputPath]]
+        [IPress, Tool:Export]
+    
         [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [MemCreate, MemChannel, 256, 0]
         [MemWriteString, MemChannel, channel, 0]
@@ -246,21 +240,12 @@
 [IButton, "ZPlugin:UDIMTextureImporter3:Color:Import", "Annotation here",
     
     [IConfig,2022]
-    [FileNameSetNext,[Var, GoZInputPath]]
-    [IPress, Tool:Export]
-    
-    // get orig tool name
-    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
-
-    [VarDef, dialogTitle, "Please select image files"]
-    [VarSet, fileExt, "tif,tiff,exr"]
-    [MemCreate, ZFileUTils_FileExt, 256, 0]
-    [MemWriteString, ZFileUTils_FileExt, fileExt,0]
-    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
-    [MemDelete, ZFileUTils_FileExt]
-    // [Note, [StrMerge, fileCount," files selected"],,2]
+    [RoutineCall, openImageFiles, "dummyText"]
 
     [If, fileCount > 0,
+        [FileNameSetNext,[Var, GoZInputPath]]
+        [IPress, Tool:Export]
+    
         // [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
 
@@ -337,21 +322,12 @@
 
 [IButton, "ZPlugin:UDIMTextureImporter3:Mask:Import", "Annotation here",
     [IConfig,2022]
-    [FileNameSetNext,[Var, GoZInputPath]]
-    [IPress, Tool:Export]
-
-    // get orig tool name
-    [VarSet, toolName, [IGetTitle,Tool:ItemInfo]]
-
-    [VarDef, dialogTitle, "Please select image files"]
-    [VarSet, fileExt, "tif,tiff,exr"]
-    [MemCreate, ZFileUTils_FileExt, 256, 0]
-    [MemWriteString, ZFileUTils_FileExt, fileExt,0]
-    [VarSet, fileCount, [FileExecute, [Var, ZFileUtilsPath], "GetFilesDialog", #dialogTitle, , ZFileUTils_FileExt]]
-    [MemDelete, ZFileUTils_FileExt]
-    // [Note, [StrMerge, fileCount," files selected"],,2]
+    [RoutineCall, openImageFiles, "dummyText"]
 
     [If, fileCount > 0,
+        [FileNameSetNext,[Var, GoZInputPath]]
+        [IPress, Tool:Export]
+
         // [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
 
