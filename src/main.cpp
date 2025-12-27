@@ -662,10 +662,11 @@ void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& tex
  * @param [in] optBuffer2Size : Unused
  * @param [in] zData : Unused
  */
-float EXPORT importUDIM(char* GoZFilePath, double value,
-    char* pOptBuffer1, [[maybe_unused]] int optBuffer1Size,
-    char* pOptBuffer2, [[maybe_unused]] int optBuffer2Size,
-    [[maybe_unused]] char** zData)
+float EXPORT importUDIM(
+    char* GoZFilePath,
+    double value,
+    char* pOptBuffer1,
+    char* pOptBuffer2)
 {
     // Open console
     AllocConsole();
@@ -745,7 +746,7 @@ float EXPORT importUDIM(char* GoZFilePath, double value,
     fclose(fp);
     FreeConsole();
 
-    return 0;
+    return 0.0f;
 }
 
 #ifdef _WIN32

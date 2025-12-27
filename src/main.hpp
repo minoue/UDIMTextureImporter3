@@ -37,10 +37,7 @@ struct Face {
 float EXPORT importUDIM(char* textFromZBrush,
     double value,
     char* pOptBuffer1,
-    int optBuffer1Size,
-    char* pOptBuffer2,
-    int optBuffer2Size,
-    char** zData);
+    char* pOptBuffer2);
 
 #ifdef __cplusplus
 }

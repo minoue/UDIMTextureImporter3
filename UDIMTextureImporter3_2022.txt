@@ -1,16 +1,17 @@
-// UI version 0.1.9
+// UI version 0.1.10
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
 
 [VarDef, dllPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3Data\UDIMTextureImporter3.dll"]
+[VarDef, dllLoaderPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3Data\UDIMTextureImporterLoader.dll"]
 [VarDef, ZFileUtilsPath, "ZBRUSH_ZSTARTUP\ZPlugs64\UDIMTextureImporter3Data\ZFileUtils\ZFileUtils64.dll"]
 
 [VarDef, err, 0] // 0: Good, 1: Bad
 [VarDef, fileCount, 0]
 [VarDef, fileName, ""]
 [VarDef, fileExt, ""]
-[VarDef, channel, "R"]
+[VarDef, channel, "R"] // "R", "G", "B": Normal displacement, "RGB": Vector displacement, "COL": color, "MSK", mask
 [VarDef, gamma, 0]
 [VarDef, midValue, 0]
 [VarDef, channel, ""]
@@ -73,7 +74,8 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
-        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
+        [VarSet, err, [FileExecute, [Var, dllLoaderPath], "startProcess", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
+
         [MemDelete, MemChannel]
         [MemDelete, MemFilePathArray]
 
@@ -202,7 +204,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
-        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
+        [VarSet, err, [FileExecute, [Var, dllLoaderPath], "startProcess", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
         [MemDelete, MemFilePathArray]
@@ -273,7 +275,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
-        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
+        [VarSet, err, [FileExecute, [Var, dllLoaderPath], "startProcess", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
         [MemDelete, MemFilePathArray]
@@ -355,7 +357,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
-        [VarSet, err, [FileExecute, [Var, dllPath], "importUDIM", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
+        [VarSet, err, [FileExecute, [Var, dllLoaderPath], "startProcess", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
         [MemDelete, MemFilePathArray]
