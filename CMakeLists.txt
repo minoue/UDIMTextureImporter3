@@ -11,6 +11,10 @@ set(SOURCE_FILES
     src/miniz.c
 )
 
+set(LOADER_FILES
+    src/loader.cpp
+)
+
 set(CMAKE_CXX_STANDARD 20)
 
 include(CheckCXXCompilerFlag)
@@ -54,7 +58,7 @@ set(INSTALL_DIR "../")
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-add_library(UDIMTextureImporterLoader SHARED src/loader.cpp)
+add_library(UDIMTextureImporterLoader SHARED ${LOADER_FILES})
 
 set_target_properties(${PROJECT_NAME} UDIMTextureImporterLoader PROPERTIES PREFIX "" SUFFIX ".dll")
 if (TIFF_FOUND)
