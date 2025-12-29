@@ -1,4 +1,4 @@
-// UI version 0.1.11
+// UI version 0.1.12
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
@@ -63,8 +63,6 @@
             [If, err == 0,
                 [MemReadString, MemFilePath, fileName]
                 [VarSet, fileName, [StrMerge, fileName, "#"]]
-                // [Note, fileName, , 1]
-                // [Note, offset, , 1]
                 [MemWriteString, MemFilePathArray, fileName, offset]
                 [VarSet, numSinglePath, [StrLength, fileName]]
                 [VarAdd, offset, numSinglePath]
@@ -248,7 +246,6 @@
         [FileNameSetNext,[Var, GoZInputPath]]
         [IPress, Tool:Export]
     
-        // [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
 
         [VarSet, channel, "COL"]
@@ -330,7 +327,6 @@
         [FileNameSetNext,[Var, GoZInputPath]]
         [IPress, Tool:Export]
 
-        // [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
         [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
 
         [VarSet, channel, "MSK"]
