@@ -674,6 +674,15 @@ float EXPORT importUDIM(
     freopen_s(&fp, "CONOUT$", "w", stdout);
     freopen_s(&fp, "CONIN$", "r", stdin);
 
+    // Set to UTF-8 to prevent garbled characters
+    SetConsoleOutputCP(CP_UTF8);
+
+    // Enable escape sequence(VT100)
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
     std::filesystem::path path = GoZFilePath;
 
     // Create log file
@@ -690,9 +699,14 @@ float EXPORT importUDIM(
 
     // Convert/Split long path string to path array
     std::string pathStringArray(pOptBuffer1);
+     
+    // Outout yellow notification message (start with '\033[33m'、reset by '\033[0m')
+    std::string message = "\033[33m [⚠️⚠️⚠️] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [⚠️⚠️⚠️] \033[0m";
+    std::cout << message << std::endl;
 
     // Textures
     std::cout << "1/5 : Loading textures..." << std::endl;
+
     std::vector<Image> texture_data;
     initTextures(pathStringArray, texture_data);
     log << "Textures are initialized" << std::endl;
@@ -738,7 +752,7 @@ float EXPORT importUDIM(
     mesh->writeMesh(path.string().c_str());
     log << "Mesh has been saved." << std::endl;
 
-    std::cout << "Done. Close the console" << std::endl;
+    std::cout << "\033[32mProcess complete. Please close this console.\033[0m" << std::endl;
 
     // Close all
     delete mesh;
