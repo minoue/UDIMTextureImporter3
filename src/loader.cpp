@@ -24,13 +24,21 @@ float EXPORT loaderMain(char* GoZFilePath, double value,
     // Add dir path to the dll search path
     SetDllDirectoryA(baseDir.string().c_str());
 
-    // HMODULE hLib = LoadLibraryA(dllPath.string().c_str());
-    HMODULE hLib = LoadLibraryA("UDIMTextureImporter3.dll");
-
+    // Check if the file exists
     log << "DLL path: " << dllPath.string() << std::endl;
+    if (std::filesystem::exists(dllPath)) {
+        log << "Main DLL exists" << std::endl;
+    } else {
+        log << "Main DLL doesn't exists" << std::endl;
+        SetDllDirectoryA(NULL);
+        return 1.0f;
+    }
+
+    HMODULE hLib = LoadLibraryA(dllPath.string().c_str());
+
     if (hLib == NULL) {
         // If dll not found
-        log << "No main DLL found" << std::endl;
+        log << "Failed to load the main DLL." << std::endl;
         SetDllDirectoryA(NULL);
         return 1.0f;
     } else {
