@@ -11,19 +11,22 @@ If everything(mesh, UVs, Smooth options, map settings, etc) are all correct and 
 
 ![](https://raw.githubusercontent.com/minoue/UDIMTextureImporter/main/img/edge.gif)
 
+## Tetsted Versions
+Tested on Windows 11 (local and remote) with ZBrush 2022, 2023, and 2025.
+Results are based solely on my personal environment and **may not be representative of all setups**.
+
 ## Install
-### Windows10/11 & ZBrush2022
 1. Go to [release page](https://github.com/minoue/UDIMTextureImporter3/releases), download the latest and extract it.
-3. Move `UDIMTextureImporter3_2022.zsc` to `ZPlugs64` folder.
+3. Move `UDIMTextureImporter3.zsc` to `ZPlugs64` folder.
 4. Move `UDIMTextureImporter3Data` folder to `ZPlugs64` folder.
 
 So they should be placed like this
 ```
-└── ZBrush 2022/
+└── ZBrush 202X/
     ├── ZBrush.exe
     └── ZStartup/
         └── ZPlugs64/
-            ├── UDIMTextureImporter3_2022.zsc
+            ├── UDIMTextureImporter3.zsc
             └── UDIMTextureImporter3Data/
                 ├── UDIMTextureImporter3.dll
                 ├── tiff.dll
