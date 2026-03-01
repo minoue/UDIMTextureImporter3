@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <cmath>
 
 #include "texture.hpp"
 #include "tiffio.h"
@@ -19,8 +20,8 @@ Image::~Image() {};
  */
 void Image::localizeUV(float* localUV, const float& u, const float& v)
 {
-    float u_local = u - floor(u);
-    float v_local = v - floor(v);
+    float u_local = u - std::floor(u);
+    float v_local = v - std::floor(v);
     localUV[0] = u_local;
     localUV[1] = v_local;
 }
@@ -48,8 +49,8 @@ int Image::getUDIMfromPath(const std::string& path)
  */
 size_t Image::getUDIMfromUV(float u, float v)
 {
-    size_t U = static_cast<size_t>(ceil(u));
-    size_t V = static_cast<size_t>(floor(v)) * 10;
+    size_t U = static_cast<size_t>(std::ceil(u));
+    size_t V = static_cast<size_t>(std::floor(v)) * 10;
     return U + V;
 }
 
