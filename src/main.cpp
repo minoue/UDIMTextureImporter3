@@ -71,7 +71,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         } else if (ext == ".tif" || ext == ".tiff") {
             img.loadTif(path.string());
         } else {
-            std::cout << "Not suppported file format" << std::endl;
+            std::cout << "Not supported file format" << std::endl;
         }
 
         int udim = Image::getUDIMfromPath(path.string());
@@ -784,6 +784,6 @@ BOOL WINAPI DllMain([[maybe_unused]] HINSTANCE hinstDLL, DWORD fdwReason, [[mayb
         // detach from thread
         break;
     }
-    return TRUE; // succesful
+    return TRUE; // successful
 }
 #endif
