@@ -338,7 +338,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @param [in] vertices : vertex array extracted from the goz mesh
  * @param [in] normals : normal array calculated by the goz mesh
  * @param [in] faces : Face array
- * @param [in] data : pixel data for each texture
+ * @param [in] texture_data : pixel data for each texture
  */
 void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
@@ -436,9 +436,9 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @param [in] vertices : vertex array extracted from the goz mesh
  * @param [in] normals : normal array calculated by the goz mesh
  * @param [in] faces : Face array
- * @param [in] data : pixel data for each texture
+ * @param [in] texture_data : pixel data for each texture
  * @param [in] channel : ID to choose channels, "R", "G", or "B"
- * @param [in] mid-value : mid value, default is 0
+ * @param [in] midValue : mid value, default is 0
  */
 void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Vector3f>& normals,
@@ -515,7 +515,7 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @brief Get RGB values from textures and apply to the goz mesh m_rgb
  * @param [in] mesh : GoZ mesh data
  * @param [in] faces : Face array
- * @param [in] data : pixel data for each texture
+ * @param [in] texture_data : pixel data for each texture
  * @param [in] gamma : gamma value, default is 1, use 2.2 for loading linear textures
  */
 void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
@@ -657,10 +657,7 @@ void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& tex
  * @param [in] GoZFilePath : File path to the temp file
  * @param [in] value : value for gamma or mid-point
  * @param [in] pOptBuffer1 : next point of triangle
- * @param [in] optBuffer1Size : Unused
  * @param [in] pOptBuffer2 : channel ID
- * @param [in] optBuffer2Size : Unused
- * @param [in] zData : Unused
  */
 float EXPORT importUDIM(
     char* GoZFilePath,
