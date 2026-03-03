@@ -560,7 +560,7 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
                 const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
                 // replace color
-                if (mesh->m_mrgb[currentIndex] != NULL) {
+                if (mesh->m_mrgb[currentIndex] != 0) { // NULL
                     mesh->m_mrgb[currentIndex] = ui32;
                 }
             }
@@ -597,7 +597,7 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
         uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
         // replace color
-        if (mesh->m_mrgb[i] != NULL) {
+        if (mesh->m_mrgb[i] != 0) { // NULL
             mesh->m_mrgb[i] = ui32;
         }
     }
@@ -607,7 +607,7 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
  * @brief Apply mask from B/W textures
  * @param [in] mesh : GoZ mesh data
  * @param [in] faces : Face array
- * @param [in] data : pixel data for each texture
+ * @param [in] texture_data : pixel data for each texture
  */
 void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
 {
@@ -643,7 +643,7 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
                 uint16_t r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
 
                 // replace color
-                if (mesh->m_mask[currentIndex] != NULL) {
+                if (mesh->m_mask[currentIndex] != 0) { // NULL
                     mesh->m_mask[currentIndex] = r;
                 }
             }
