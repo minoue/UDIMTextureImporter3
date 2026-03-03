@@ -486,7 +486,6 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
                     int channels = img.nchannels;
                     float localizedUV[2];
                     Image::localizeUV(localizedUV, u, v);
-                    Vector3f rgb;
                     displacement = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width, height, channels);
                 }
             }
@@ -549,7 +548,7 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
                 int channels = img.nchannels;
                 float localizedUV[2];
                 Image::localizeUV(localizedUV, u, v);
-                Vector3f rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
+                rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                     height, channels);
 
                 // Convert 4 8-bit int to a single 32 bit value
@@ -638,7 +637,7 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
                 int channels = img.nchannels;
                 float localizedUV[2];
                 Image::localizeUV(localizedUV, u, v);
-                Vector3f rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
+                rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                     height, channels);
 
                 uint16_t r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
