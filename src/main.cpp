@@ -664,11 +664,13 @@ float EXPORT importUDIM(
     char* pOptBuffer1,
     char* pOptBuffer2)
 {
+#ifdef IS_REAL_WIN
     // Open console
     AllocConsole();
     FILE* fp;
     freopen_s(&fp, "CONOUT$", "w", stdout);
     freopen_s(&fp, "CONIN$", "r", stdin);
+#endif
 
     // Set to UTF-8 to prevent garbled characters
     SetConsoleOutputCP(CP_UTF8);
@@ -753,8 +755,10 @@ float EXPORT importUDIM(
     // Close all
     delete mesh;
     log.close();
+    #ifdef IS_REAL_WIN
     fclose(fp);
     FreeConsole();
+    #endif
 
     return 0.0f;
 }
