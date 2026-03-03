@@ -6,8 +6,8 @@
 #include <fstream>
 #include <iostream>
 #include <ranges>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <vector>
 
 #ifdef USE_OPENMP
