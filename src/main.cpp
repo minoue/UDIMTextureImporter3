@@ -54,7 +54,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
 
     data.resize(static_cast<size_t>(maxUDIM));
 
-    int numPaths = (int)paths.size();
+    int numPaths = static_cast<int>(paths.size());
 
     // Create texture data
     int inc = 1;
@@ -558,7 +558,7 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
                 int r = static_cast<int>(round(pow(rgb.x(), 1 / gamma) * 255.0));
                 int g = static_cast<int>(round(pow(rgb.y(), 1 / gamma) * 255.0));
                 int b = static_cast<int>(round(pow(rgb.z(), 1 / gamma) * 255.0));
-                uint32_t ui32 = (uint32_t(m & 0xFF) << 24) | (uint32_t(r & 0xFF) << 16) | (uint32_t(g & 0xFF) << 8) | uint32_t(b & 0xFF);
+                const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
                 // replace color
                 if (mesh->m_mrgb[currentIndex] != NULL) {
@@ -574,7 +574,7 @@ int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float n
     float oldRange = oldMax - oldMin;
     float newRange = newMax - newMin;
     float newValue = ((oldValue - oldMin) * newRange / oldRange) + newMin;
-    int intValue = int(round(newValue));
+    int intValue = static_cast<int>(round(newValue));
     return intValue;
 }
 
@@ -731,7 +731,7 @@ float EXPORT importUDIM(
         log << "Vector displacement done" << std::endl;
     } else if (strcmp(channel, "COL") == 0) {
         std::cout << "4/5 : Applying color..." << std::endl;
-        applyColor(mesh, faces, texture_data, float(value));
+        applyColor(mesh, faces, texture_data, static_cast<float>(value));
         log << "Color applied" << std::endl;
     } else if (strcmp(channel, "MSK") == 0) {
         std::cout << "4/5 : Applying mask..." << std::endl;
@@ -739,7 +739,7 @@ float EXPORT importUDIM(
         log << "Mask applied" << std::endl;
     } else {
         std::cout << "4/5 : Applying normal displacement..." << std::endl;
-        applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel, float(value));
+        applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel, static_cast<float>(value));
         log << "Normal displacement done" << std::endl;
     }
 
