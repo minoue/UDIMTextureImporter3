@@ -340,8 +340,8 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @param [in] faces : Face array
  * @param [in] texture_data : pixel data for each texture
  */
-void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
-    std::vector<Vector3f>& normals,
+void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
+    const std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
     std::vector<Image>& texture_data)
 {
@@ -404,9 +404,9 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
                 if (img.isEmpty) {
                     displacement << 0, 0, 0;
                 } else {
-                    int width = img.width;
-                    int height = img.height;
-                    int channels = img.nchannels;
+                    const int width = img.width;
+                    const int height = img.height;
+                    const int channels = img.nchannels;
                     float localizedUV[2];
                     Image::localizeUV(localizedUV, u, v);
                     Vector3f rgb;
@@ -415,7 +415,7 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
                     displacement = rgb.transpose() * mat;
                 }
             }
-            Vector3f new_pp = pp0 + displacement;
+            const Vector3f new_pp = pp0 + displacement;
             tempVertices[currentIndex] = new_pp;
 
             pp0.isDone = true;
@@ -440,10 +440,10 @@ void applyVectorDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @param [in] channel : ID to choose channels, "R", "G", or "B"
  * @param [in] midValue : mid value, default is 0
  */
-void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
-    std::vector<Vector3f>& normals,
+void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
+    const std::vector<Vector3f>& normals,
     std::vector<Face>& faces,
-    std::vector<Image>& texture_data, char* channel, float midValue)
+    std::vector<Image>& texture_data, const char* channel, float midValue)
 {
     std::vector<Vector3f> tempVertices;
     tempVertices.resize(vertices.size());
@@ -518,7 +518,7 @@ void applyNormalDisplacement(GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @param [in] texture_data : pixel data for each texture
  * @param [in] gamma : gamma value, default is 1, use 2.2 for loading linear textures
  */
-void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
+void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
     std::vector<Image>& texture_data, float gamma)
 {
     std::string gmmaStr = std::to_string(gamma);
@@ -583,19 +583,19 @@ int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float n
  * @param [in] mesh : GoZ mesh data
  * @param [in] normals : normal vector array
  */
-void debugNormals(GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
+void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
 {
     size_t numVerts = normals.size();
     for (size_t i = 0; i < numVerts; i++) {
         Vector3f& nml = normals[i];
-        float rf = nml.x();
-        float gf = nml.y();
-        float bf = nml.z();
-        int r = remapValue(rf, -1, 1, 0, 255);
-        int g = remapValue(gf, -1, 1, 0, 255);
-        int b = remapValue(bf, -1, 1, 0, 255);
-        int m = 0;
-        uint32_t ui32 = (uint32_t(m & 0xFF) << 24) | (uint32_t(r & 0xFF) << 16) | (uint32_t(g & 0xFF) << 8) | uint32_t(b & 0xFF);
+        const float rf = nml.x();
+        const float gf = nml.y();
+        const float bf = nml.z();
+        const int r = remapValue(rf, -1, 1, 0, 255);
+        const int g = remapValue(gf, -1, 1, 0, 255);
+        const int b = remapValue(bf, -1, 1, 0, 255);
+        constexpr int m = 0;
+        uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
         // replace color
         if (mesh->m_mrgb[i] != NULL) {
@@ -610,7 +610,7 @@ void debugNormals(GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
  * @param [in] faces : Face array
  * @param [in] data : pixel data for each texture
  */
-void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
+void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
 {
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
