@@ -75,8 +75,8 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         }
 
         int udim = Image::getUDIMfromPath(path.string());
-        int udimCount = udim - 1000;
-        data[static_cast<size_t>(udimCount) - 1] = img;
+        int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc..
+        data[static_cast<size_t>(udimCount) - 1] = std::move(img);
 
         auto msg = std::format("{}/{} : ", inc, numPaths);
 

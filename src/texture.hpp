@@ -5,8 +5,7 @@
 
 class Image {
 public:
-    Image();
-    ~Image();
+    Image() = default;
     int width;
     int height;
     int nchannels;

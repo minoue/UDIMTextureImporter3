@@ -8,10 +8,6 @@
 #include "tiffio.h"
 #include "tinyexr.h"
 
-Image::Image() {};
-
-Image::~Image() {};
-
 /**
  * @brief Convert uv values to values of UDIM local. eg. (1.5, 1.5) -> (0.5, 0.5)
  * @param[out] localUV UDIM localizwed UV values
