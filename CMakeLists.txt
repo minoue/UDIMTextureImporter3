@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(UDIMTextureImporter3)
+set(LOADER_NAME UDIMTextureImporterLoader)
 
 set(DLL_VERSION 0.2.25)
 
@@ -67,5 +68,5 @@ else ()
     target_link_libraries(${PROJECT_NAME} PRIVATE tiff)
 endif()
 
-install(TARGETS ${PROJECT_NAME} UDIMTextureImporterLoader RUNTIME DESTINATION ../ LIBRARY DESTINATION ../)
+install(TARGETS ${PROJECT_NAME} ${LOADER_NAME} RUNTIME DESTINATION ../ LIBRARY DESTINATION ../)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
