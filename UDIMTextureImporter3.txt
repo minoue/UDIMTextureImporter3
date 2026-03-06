@@ -1,4 +1,4 @@
-// UI version 0.1.12
+// UI version 0.1.13
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
@@ -22,6 +22,20 @@
     // [Note, "ZFileUtils found"]
     , // else, not found
     [Note, "ZFileUtils not found"]
+    [Exit]
+]
+
+[If, [FileExists, [Var, dllLoaderPath]],
+    // [Note, "Loader dll found"]
+    , // else, not found
+    [Note, "Loader dll not found"]
+    [Exit]
+]
+
+[If, [FileExists, [Var, dllPath]],
+    // [Note, "Main dll found"]
+    , // else, not found
+    [Note, "Main dll not found"]
     [Exit]
 ]
 
