@@ -17,55 +17,65 @@ set(LOADER_FILES
 )
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("/std:c++latest" _cpp_latest_flag_supported)
-if (_cpp_latest_flag_supported)
-	message(STATUS "Using c++latest flag.")
-    add_compile_options("/std:c++latest")
-endif()
-
-# OpenMP
-find_package(OpenMP)
-if (OPENMP_CXX_FOUND)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    add_definitions(-DUSE_OPENMP)
-endif()
-
-if (TIFF_INSTALL_DIR)
-    set(TIFF_INCLUDE_DIR "${TIFF_INSTALL_DIR}/include")
-    set(TIFF_LIB_DIR "${TIFF_INSTALL_DIR}/lib")
-    message(STATUS "Tiff include dir : ${TIFF_INCLUDE_DIR}")
-    message(STATUS "Tiff lib dir : ${TIFF_LIB_DIR}")
-
-    include_directories(${TIFF_INCLUDE_DIR})
-    link_directories(${TIFF_LIB_DIR})
-else ()
+if (NOT TIFF_INSTALL_DIR)
     find_package(TIFF)
     if (TIFF_FOUND)
         message("Tiff include dir : ${TIFF_INCLUDE_DIR}")
         message("Tiff libraries : ${TIFF_LIBRARIES}")
-        include_directories(${TIFF_INCLUDE_DIR})
     else ()
-        message(NOTICE "Tiff package not found. Using custom libtiff dir")
-        if (NOT TIFF_INSTALL_DIR)
-            message(FATAL_ERROR "Tiff install dir must be set")
-        endif()
-    endif ()
+        message(NOTICE "Tiff package not found. Use TIFF_INSTALL_DIR to specifiy custom tiff install dir.")
+        message(FATAL_ERROR "TIFF_INSTALL_DIR must be set!")
+    endif()
+else()
+    message(STATUS "Using TIFF_INSTALL_DIR ${TIFF_INSTALL_DIR}")
+    set(TIFF_INCLUDE_DIR "${TIFF_INSTALL_DIR}/include")
+    set(TIFF_LIB_DIR "${TIFF_INSTALL_DIR}/lib")
+    
+    message(STATUS "Tiff include dir : ${TIFF_INCLUDE_DIR}")
+    message(STATUS "Tiff lib dir : ${TIFF_LIB_DIR}")
+
+    set(TIFF_LIBRARIES
+        "${TIFF_LIB_DIR}/tiff.lib"
+        "${TIFF_LIB_DIR}/tiffxx.lib"
+        )
 endif()
 
-set(INSTALL_DIR "../")
+# インクルードパスの適用
+include_directories(${TIFF_INCLUDE_DIR})
 
+# Create a library for the main dll
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-add_library(UDIMTextureImporterLoader SHARED ${LOADER_FILES})
+# Create a library for the intermediate loader dll
+add_library(${LOADER_NAME} SHARED ${LOADER_FILES})
+set_target_properties(${LOADER_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
 
-set_target_properties(${PROJECT_NAME} UDIMTextureImporterLoader PROPERTIES PREFIX "" SUFFIX ".dll")
-if (TIFF_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE TIFF::TIFF)
-else ()
-    target_link_libraries(${PROJECT_NAME} PRIVATE tiff)
+if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
+    # Windows
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IS_REAL_WIN)
+    message(STATUS "Build environment: Native Windows (Defining IS_REAL_WIN)")
+else()
+    # Linux environment（MinGW cross compile）
+    message(STATUS "Build environment: Linux (mingw for wine)")
+    target_link_options(${PROJECT_NAME} PRIVATE "-static" "-static-libgcc" "-static-libstdc++")
+    target_link_options(${LOADER_NAME} PRIVATE "-static" "-static-libgcc" "-static-libstdc++")
+endif()
+
+# ---- libtiff ----
+target_link_libraries(${PROJECT_NAME} PRIVATE ${TIFF_LIBRARIES})
+
+# ---- OpenMP ----
+find_package(OpenMP QUIET)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USE_OPENMP)
+    message(STATUS "OpenMP found and enabled")
+else()
+    message(STATUS "OpenMP not found. Parallel processing will be disabled.")
 endif()
 
 install(TARGETS ${PROJECT_NAME} ${LOADER_NAME} RUNTIME DESTINATION ../ LIBRARY DESTINATION ../)
