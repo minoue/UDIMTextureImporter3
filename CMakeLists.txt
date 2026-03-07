@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(UDIMTextureImporter3)
 set(LOADER_NAME UDIMTextureImporterLoader)
 
-set(DLL_VERSION 0.2.25)
+set(DLL_VERSION 0.2.26)
 
 set(SOURCE_FILES
     src/main.cpp
@@ -56,8 +56,7 @@ set_target_properties(${LOADER_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
 
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
     # Windows
-    target_compile_definitions(${PROJECT_NAME} PRIVATE IS_REAL_WIN)
-    message(STATUS "Build environment: Native Windows (Defining IS_REAL_WIN)")
+    message(STATUS "Build environment: Native Windows")
 else()
     # Linux environment（MinGW cross compile）
     message(STATUS "Build environment: Linux (mingw for wine)")

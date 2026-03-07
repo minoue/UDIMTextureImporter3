@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
+#include <limits>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -664,22 +665,11 @@ float EXPORT importUDIM(
     char* pOptBuffer1,
     char* pOptBuffer2)
 {
-#ifdef IS_REAL_WIN
     // Open console
     AllocConsole();
     FILE* fp;
     freopen_s(&fp, "CONOUT$", "w", stdout);
     freopen_s(&fp, "CONIN$", "r", stdin);
-#endif
-
-    // Set to UTF-8 to prevent garbled characters
-    SetConsoleOutputCP(CP_UTF8);
-
-    // Enable escape sequence(VT100)
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(hOut, &dwMode);
-    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
     std::filesystem::path path = GoZFilePath;
 
@@ -698,8 +688,7 @@ float EXPORT importUDIM(
     // Convert/Split long path string to path array
     std::string pathStringArray(pOptBuffer1);
      
-    // Outout yellow notification message (start with '\033[33m'、reset by '\033[0m')
-    std::string message = "\033[33m [⚠️⚠️⚠️] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [⚠️⚠️⚠️] \033[0m";
+    std::string message = "[!!!] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [!!!]";
     std::cout << message << std::endl;
 
     // Textures
@@ -750,15 +739,16 @@ float EXPORT importUDIM(
     mesh->writeMesh(path.string().c_str());
     log << "Mesh has been saved." << std::endl;
 
-    std::cout << "\033[32mProcess complete. Please close this console.\033[0m" << std::endl;
-
     // Close all
     delete mesh;
     log.close();
-    #ifdef IS_REAL_WIN
+
+    std::cout << "\nDone.\nPress Enter to close console..." << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.get();
+
     fclose(fp);
     FreeConsole();
-    #endif
 
     return 0.0f;
 }
