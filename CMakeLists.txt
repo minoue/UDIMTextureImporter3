@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(UDIMTextureImporter3)
 set(LOADER_NAME UDIMTextureImporterLoader)
 
-set(DLL_VERSION 0.2.39)
+set(DLL_VERSION 0.3.0)
 
 set(SOURCE_FILES
     src/main.cpp
@@ -69,16 +69,6 @@ endif()
 
 # ---- libtiff ----
 target_link_libraries(${PROJECT_NAME} PRIVATE ${TIFF_LIBRARIES})
-
-# ---- OpenMP ----
-find_package(OpenMP QUIET)
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE USE_OPENMP)
-    message(STATUS "OpenMP found and enabled")
-else()
-    message(STATUS "OpenMP not found. Parallel processing will be disabled.")
-endif()
 
 install(TARGETS ${PROJECT_NAME} ${LOADER_NAME} RUNTIME DESTINATION ../ LIBRARY DESTINATION ../)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})

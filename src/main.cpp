@@ -9,9 +9,9 @@
 #include <vector>
 
 
-#ifdef USE_OPENMP
-#include <omp.h>
-#endif
+#include <atomic>
+#include <thread>
+#include <mutex>
 
 #include "texture.hpp"
 #include "../third_party/GoZ/GoZ_Mesh.h"
@@ -57,35 +57,63 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
     int numPaths = static_cast<int>(paths.size());
 
     // Create texture data
-    int inc = 1;
-#pragma omp parallel for
-    for (int i = 0; i < numPaths; i++) {
-        std::filesystem::path& path = paths[static_cast<size_t>(i)];
-        std::string ext = path.extension().string();
+    const unsigned int numThreads = (std::min)(
+        static_cast<unsigned int>(numPaths),
+        std::thread::hardware_concurrency()
+        );
 
-        Image img;
-        img.isEmpty = false;
+    std::atomic<int> nextIndex(0);
+    std::mutex coutMutex;
+    std::atomic<int> loadedCount(0);
 
-        if (ext == ".exr") {
-            img.loadExr(path.string());
-        } else if (ext == ".tif" || ext == ".tiff") {
-            img.loadTif(path.string());
-        } else {
-            std::cout << "Not supported file format\n";
+    auto worker = [&]() -> void {
+        while (true) {
+            int index = nextIndex.fetch_add(1);
+            if (index >= numPaths) {
+                break;
+            }
+            // std::filesystem::path& path = paths[static_cast<size_t>(index)];
+            std::filesystem::path& path = paths.at(static_cast<size_t>(index));
+            std::string ext = path.extension().string();
+            Image img;
+            img.isEmpty = false;
+            if (ext == ".exr") {
+                img.loadExr(path.string());
+            } else if (ext == ".tif" || ext == ".tiff") {
+                img.loadTif(path.string());
+            } else {
+                std::cout << "Not supported file format" << "\n";
+            }
+            int udim = Image::getUDIMfromPath(path.string());
+            int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc..
+            data.at(static_cast<size_t>(udimCount) - 1) = std::move(img);
+            auto msg = std::format("{}/{} : ", index, numPaths);
+
+            // Show progress bar
+            {
+                int loaded = ++loadedCount;
+                std::scoped_lock lock(coutMutex);
+                // std::lock_guard<std::mutex> lock(coutMutex);
+                float percent = static_cast<float>(loaded) / numPaths * 100.0f;
+                std::cout << "\r[";
+                const int bar = static_cast<int>(percent / 2.5f);
+                for (int b = 0; b < 40; b++) {
+                    std::cout << (b < bar ? "#" : "-");
+                }
+                std::cout << "] " << loaded << "/" << numPaths << " (" << static_cast<int>(percent) << "%)" << std::flush;
+            }
         }
+    };
 
-        int udim = Image::getUDIMfromPath(path.string());
-        int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc.. NOLINT
-        data[static_cast<size_t>(udimCount) - 1] = std::move(img);
-
-        auto msg = std::format("{}/{} : ", inc, numPaths);
-
-#pragma omp atomic
-        ++inc;
-
-#pragma omp critical
-        std::cout << "Loaded " << msg << path.string() << "\n";
+    std::vector<std::thread> threads;
+    for (unsigned int i = 0; i < numThreads; ++i) {
+        threads.emplace_back(worker);
     }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+    std::cout << "\n";
 }
 
 /**
