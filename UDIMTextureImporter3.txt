@@ -1,4 +1,4 @@
-// UI version 0.1.13
+// UI version 0.1.14
 
 [VarDef, GoZInputPath, [FileNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_in.GoZ"]]
 [VarDef, GoZOutputPath, [FIleNameResolvePath, "ZPUBLIC_Temp/UDIMTextureImporter3_out.Goz"]]
@@ -59,6 +59,7 @@
 
     [If, fileCount > 0,
         [FileNameSetNext,[Var, GoZInputPath]]
+        [NoteBar, "1/4: Exporting the temporary mesh...", 0.25]
         [IPress, Tool:Export]
 
         [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
@@ -86,6 +87,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
+        [NoteBar, "2/4: Importing images and applying to the mesh. Please wait...", 0.5]
         [VarSet, err, [FileExecute, [Var, dllLoaderPath], "loaderMain", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
@@ -103,6 +105,7 @@
 
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
+        [NoteBar, "3/4: Importing the new shape...", 0.75]
         [IPress, Tool:Import]
 
         // set orig tool name
@@ -111,6 +114,9 @@
         , // else
         [Note, "no output file found" , , 2]
     ]
+
+    [NoteBar, "4/4: Done", 1]
+
     , 0 // Initially Disabled?
     , 1 // Button width
     , // Optional hotkey
@@ -190,6 +196,7 @@
 
     [If, fileCount > 0,
         [FileNameSetNext,[Var, GoZInputPath]]
+        [NoteBar, "1/4: Exporting the temporary mesh...", 0.25]
         [IPress, Tool:Export]
     
         [VarSet, midValue, [IGet, "ZPlugin:UDIMTextureImporter3:Mid Value"]]
@@ -216,6 +223,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
+        [NoteBar, "2/4: Importing images and applying to the mesh. Please wait...", 0.5]
         [VarSet, err, [FileExecute, [Var, dllLoaderPath], "loaderMain", GoZInputPath, midValue, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
@@ -233,6 +241,7 @@
 
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
+        [NoteBar, "3/4: Importing the new shape...", 0.75]
         [IPress, Tool:Import]
         
         // set orig tool name
@@ -241,6 +250,9 @@
         , // else
         [Note, "no output file found" , , 2]
     ]
+
+    [NoteBar, "4/4: Done", 1]
+
     , 0 // Initially Disabled?
     , 1 // Button width
     , // Optional hotkey
@@ -258,6 +270,7 @@
 
     [If, fileCount > 0,
         [FileNameSetNext,[Var, GoZInputPath]]
+        [NoteBar, "1/4: Exporting the temporary mesh...", 0.25]
         [IPress, Tool:Export]
     
         [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
@@ -286,6 +299,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
+        [NoteBar, "2/4: Importing images and applying to the mesh. Please wait...", 0.5]
         [VarSet, err, [FileExecute, [Var, dllLoaderPath], "loaderMain", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
@@ -303,6 +317,7 @@
 
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
+        [NoteBar, "3/4: Importing the new shape...", 0.75]
         [IPress, Tool:Import]
         
         // set orig tool name
@@ -311,6 +326,9 @@
         , // else
         [Note, "no output file found" , , 2]
     ]
+
+    [NoteBar, "4/4: Done", 1]
+
     , 0 // Initially Disabled?
     , 1 // Button width
     , // Optional hotkey
@@ -339,6 +357,7 @@
 
     [If, fileCount > 0,
         [FileNameSetNext,[Var, GoZInputPath]]
+        [NoteBar, "1/4: Exporting the temporary mesh...", 0.25]
         [IPress, Tool:Export]
 
         [VarSet, gamma, [IGet, "ZPlugin:UDIMTextureImporter3:Gamma"]]
@@ -367,6 +386,7 @@
         ] // end loop
         [MemDelete, MemFilePath]
 
+        [NoteBar, "2/4: Importing images and applying to the mesh. Please wait...", 0.5]
         [VarSet, err, [FileExecute, [Var, dllLoaderPath], "loaderMain", GoZInputPath, gamma, MemFilePathArray, MemChannel]]
 
         [MemDelete, MemChannel]
@@ -384,6 +404,7 @@
 
     [If, [FileExists, GoZOutputPath],
         [FileNameSetNext, GoZOutputPath]
+        [NoteBar, "3/4: Importing the new shape...", 0.75]
         [IPress, Tool:Import]
         
         // set orig tool name
@@ -395,6 +416,8 @@
 
     [IPress, Tool:Masking:Inverse]
     [IPress, Tool:Masking:Inverse]
+
+    [NoteBar, "4/4: Done", 1]
 
     , 0 // Initially Disabled?
     , 1 // Button width
