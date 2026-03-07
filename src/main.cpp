@@ -72,7 +72,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         } else if (ext == ".tif" || ext == ".tiff") {
             img.loadTif(path.string());
         } else {
-            std::cout << "Not supported file format" << std::endl;
+            std::cout << "Not supported file format\n";
         }
 
         int udim = Image::getUDIMfromPath(path.string());
@@ -85,7 +85,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         ++inc;
 
 #pragma omp critical
-        std::cout << "Loaded " << msg << path.string() << std::endl;
+        std::cout << "Loaded " << msg << path.string() << "\n";
     }
 }
 
@@ -688,21 +688,20 @@ float EXPORT importUDIM(
     // Convert/Split long path string to path array
     std::string pathStringArray(pOptBuffer1);
      
-    std::string message = "[!!!] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [!!!]";
-    std::cout << message << std::endl;
+    std::cout << "[!!!] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [!!!]\n";
 
     // Textures
-    std::cout << "1/5 : Loading textures..." << std::endl;
+    std::cout << "1/5 : Loading textures...\n";
 
     std::vector<Image> texture_data;
     initTextures(pathStringArray, texture_data);
-    log << "Textures are initialized" << std::endl;
+    log << "Textures are initialized\n";
 
     // Mesh
-    std::cout << "2/5 : Loading temp mesh : " << GoZFilePath << std::endl;
+    std::cout << "2/5 : Loading temp mesh : " << GoZFilePath << "\n";
     GoZ_Mesh* mesh = new GoZ_Mesh;
     mesh->readMesh(GoZFilePath);
-    log << "Mesh obj has been created..." << std::endl;
+    log << "Mesh obj has been created...\n";
 
     // Create data arrays
     std::vector<Point> vertices;
@@ -710,40 +709,40 @@ float EXPORT importUDIM(
     std::vector<Face> faces;
 
     // init vertices, normals, and faces
-    std::cout << "3/5 : Generating data..." << std::endl;
+    std::cout << "3/5 : Generating data...\n";
     initMesh(mesh, vertices, normals, faces);
-    log << "Mesh has been initialized..." << std::endl;
+    log << "Mesh has been initialized...\n";
 
     // Apply displacement
     if (strcmp(channel, "RGB") == 0) {
-        std::cout << "4/5 : Applying vector displacement..." << std::endl;
+        std::cout << "4/5 : Applying vector displacement...\n";
         applyVectorDisplacement(mesh, vertices, normals, faces, texture_data);
-        log << "Vector displacement done" << std::endl;
+        log << "Vector displacement done\n";
     } else if (strcmp(channel, "COL") == 0) {
-        std::cout << "4/5 : Applying color..." << std::endl;
+        std::cout << "4/5 : Applying color...\n";
         applyColor(mesh, faces, texture_data, static_cast<float>(value));
-        log << "Color applied" << std::endl;
+        log << "Color applied\n";
     } else if (strcmp(channel, "MSK") == 0) {
-        std::cout << "4/5 : Applying mask..." << std::endl;
+        std::cout << "4/5 : Applying mask...\n";
         applyMask(mesh, faces, texture_data);
-        log << "Mask applied" << std::endl;
+        log << "Mask applied\n";
     } else {
-        std::cout << "4/5 : Applying normal displacement..." << std::endl;
+        std::cout << "4/5 : Applying normal displacement...\n";
         applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel, static_cast<float>(value));
-        log << "Normal displacement done" << std::endl;
+        log << "Normal displacement done\n";
     }
 
     // write mesh
-    std::cout << "5/5 : Writing mesh..." << std::endl;
+    std::cout << "5/5 : Writing mesh...\n";
     path.replace_filename("UDIMTextureImporter3_out.GoZ");
     mesh->writeMesh(path.string().c_str());
-    log << "Mesh has been saved." << std::endl;
+    log << "Mesh has been saved.\n";
 
     // Close all
     delete mesh;
     log.close();
 
-    std::cout << "\nDone.\nPress Enter to close console..." << std::endl;
+    std::cout << "\nDone.\nPress Enter to close console...\n";
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.get();
 
