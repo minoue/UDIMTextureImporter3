@@ -161,44 +161,61 @@ Matrix3f computeTangentMatrix(const Vector3f& P0, const Vector3f& P1,
  * @param [in] width : image width
  * @param [in] height : image height
  * @param [in] nchannel : Number of channels, usually 3 or 4
+ * Ref: https://learn.microsoft.com/en-us/windows/uwp/graphics-concepts/bilinear-texture-filtering
  */
-Vector3f getPixelValue(const float u, const float v,
+auto getPixelValue(const float u, const float v,
     const std::vector<float>& texture, const int width,
-    const int height, const int nchannel)
+    const int height, const int nchannel) -> Vector3f
 {
-    float float_width = static_cast<float>(width);
-    float float_height = static_cast<float>(height);
+    const auto float_width = static_cast<float>(width);
+    const auto float_height = static_cast<float>(height);
 
-    int x1 = static_cast<int>(std::round(float_width * u));
-    int x2 = x1 + 1;
-    int y1 = static_cast<int>(std::round(float_height * (1 - v)));
-    int y2 = y1 + 1;
+    // Get 4 texels closest to the sampling point (uv)
+    // top-left (x1, y1)
+    // top-right (x2, y1)
+    // bot-left: (x1, y2)
+    // bot-right: (x2, y2)
+    const int x1 = static_cast<int>(std::round(float_width * u));
+    const int x2 = x1 + 1;
+    const int y1 = static_cast<int>(std::round(float_height * (1 - v)));
+    const int y2 = y1 + 1;
 
-    size_t target_pixel1 = static_cast<size_t>(((width * (y1 - 1) + x1) - 1) * nchannel);
-    size_t target_pixel2 = static_cast<size_t>(((width * (y1 - 1) + x2) - 1) * nchannel);
-    size_t target_pixel3 = static_cast<size_t>(((width * (y2 - 1) + x1) - 1) * nchannel);
-    size_t target_pixel4 = static_cast<size_t>(((width * (y2 - 1) + x2) - 1) * nchannel);
+    // Get the first index of RGB values. (array is like [R, G, B, A, R, G, B, A, R, ....] if 4 channels
+    // tp1: top-left, tp2: top-right, tp3: bot-left, tp4: bot-right
+    const auto pixelIndex1 = static_cast<size_t>(((width * (y1 - 1) + x1) - 1) * nchannel);
+    const auto pixelIndex2 = static_cast<size_t>(((width * (y1 - 1) + x2) - 1) * nchannel);
+    const auto pixelIndex3 = static_cast<size_t>(((width * (y2 - 1) + x1) - 1) * nchannel);
+    const auto pixelIndex4 = static_cast<size_t>(((width * (y2 - 1) + x2) - 1) * nchannel);
 
     Vector3f A;
-    A << texture[target_pixel1], texture[target_pixel1 + 1],
-        texture[target_pixel1 + 2];
+    A << texture.at(pixelIndex1),
+         texture.at(pixelIndex1 + 1),
+         texture.at(pixelIndex1 + 2);
     Vector3f B;
-    B << texture[target_pixel2], texture[target_pixel2 + 1],
-        texture[target_pixel2 + 2];
+    B << texture.at(pixelIndex2),
+         texture.at(pixelIndex2 + 1),
+         texture.at(pixelIndex2 + 2);
     Vector3f C;
-    C << texture[target_pixel3], texture[target_pixel3 + 1],
-        texture[target_pixel3 + 2];
+    C << texture.at(pixelIndex3),
+         texture.at(pixelIndex3 + 1),
+         texture.at(pixelIndex3 + 2);
     Vector3f D;
-    D << texture[target_pixel4], texture[target_pixel4 + 1],
-        texture[target_pixel4 + 2];
+    D << texture.at(pixelIndex4),
+         texture.at(pixelIndex4 + 1),
+         texture.at(pixelIndex4 + 2);
 
-    float u1 = (static_cast<float>(x1) - 0.5f) / float_width;
-    float u2 = (static_cast<float>(x2) - 0.5f) / float_width;
-    float v1 = (static_cast<float>(y1) - 0.5f) / float_height;
-    float v2 = (static_cast<float>(y2) - 0.5f) / float_height;
+    // Get the center of the 4 texels
+    // A: (u1, v1), B: (u2, v1), C: (u1, v2), D: (u2, v2)
+    constexpr float centerOffset = 0.5;
+    const float u1 = (static_cast<float>(x1) - centerOffset) / float_width;
+    const float u2 = (static_cast<float>(x2) - centerOffset) / float_width;
+    const float v1 = (static_cast<float>(y1) - centerOffset) / float_height;
+    const float v2 = (static_cast<float>(y2) - centerOffset) / float_height;
 
-    Vector3f E = ((u2 - u) / (u2 - u1)) * A + ((u - u1) / (u2 - u1)) * B;
-    Vector3f F = ((u2 - u) / (u2 - u1)) * C + ((u - u1) / (u2 - u1)) * D;
+    // https://en.wikipedia.org/wiki/Bilinear_interpolation#Application_in_image_processing
+    // Linear interpolate pixel values
+    const Vector3f E = ((u2 - u) / (u2 - u1)) * A + ((u - u1) / (u2 - u1)) * B;
+    const Vector3f F = ((u2 - u) / (u2 - u1)) * C + ((u - u1) / (u2 - u1)) * D;
     Vector3f G = ((v2 - (1 - v)) / (v2 - v1)) * E + (((1 - v) - v1) / (v2 - v1)) * F;
 
     return G;
