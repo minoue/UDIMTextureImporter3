@@ -76,7 +76,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         }
 
         int udim = Image::getUDIMfromPath(path.string());
-        int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc..
+        int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc.. NOLINT
         data[static_cast<size_t>(udimCount) - 1] = std::move(img);
 
         auto msg = std::format("{}/{} : ", inc, numPaths);
@@ -103,10 +103,9 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
  * @return : Tangent matrix
  */
 // https://stackoverflow.com/questions/5255806/how-to-calculate-tangent-and-binorma
-Matrix3f computeTangentMatrix(const Vector3f& P0, const Vector3f& P1,
-    const Vector3f& P2, const Vector3f& uv0,
-    const Vector3f& uv1, const Vector3f& uv2, Vector3f& T,
-    Vector3f& B, Vector3f& N)
+auto computeTangentMatrix(const Vector3f& P0, const Vector3f& P1, const Vector3f& P2,
+                          const Vector3f& uv0, const Vector3f& uv1, const Vector3f& uv2,
+                          Vector3f& T, Vector3f& B, Vector3f& N) -> Matrix3f
 {
 
     // 2 edges (E1, E2) of the triangle in 3d space
@@ -322,26 +321,26 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         Vector3f Vec1 = P2 - P1;
         Vector3f Vec2 = P4 - P1;
         Vector3f N1 = Vec1.cross(Vec2);
-        normals[static_cast<size_t>(vertexIndex1)] += N1;
+        normals.at(static_cast<size_t>(vertexIndex1)) += N1;
 
         // second point
         Vector3f Vec3 = P3 - P2;
         Vector3f Vec4 = P1 - P2;
         Vector3f N2 = Vec3.cross(Vec4);
-        normals[static_cast<size_t>(vertexIndex2)] += N2;
+        normals.at(static_cast<size_t>(vertexIndex2)) += N2;
 
         // third point
         Vector3f Vec5 = P4 - P3;
         Vector3f Vec6 = P2 - P3;
         Vector3f N3 = Vec5.cross(Vec6);
-        normals[static_cast<size_t>(vertexIndex3)] += N3;
+        normals.at(static_cast<size_t>(vertexIndex3)) += N3;
 
         // forth point
         if (vertexIndex4 != -1) {
             Vector3f Vec7 = P1 - P4;
             Vector3f Vec8 = P2 - P4;
             Vector3f N4 = Vec7.cross(Vec8);
-            normals[static_cast<size_t>(vertexIndex4)] += N4;
+            normals.at(static_cast<size_t>(vertexIndex4)) += N4;
         }
     }
 
@@ -372,28 +371,30 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
         size_t numFaceVertices = faceVertices.size();
         size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
         for (size_t i = 0; i < numFaceVertices; i++) {
-            FaceVertex *previousVertex, *currentVertex, *nextVertex;
+            FaceVertex *previousVertex = nullptr;
+            FaceVertex *currentVertex = nullptr;
+            FaceVertex *nextVertex = nullptr;
             if (i == 0) {
-                previousVertex = &faceVertices[lastFaceVertex];
-                currentVertex = &faceVertices[i];
-                nextVertex = &faceVertices[i + 1];
+                previousVertex = &faceVertices.at(lastFaceVertex);
+                currentVertex = &faceVertices.at(i);
+                nextVertex = &faceVertices.at(i + 1);
             } else if (i == lastFaceVertex) {
-                previousVertex = &faceVertices[i - 1];
-                currentVertex = &faceVertices[i];
-                nextVertex = &faceVertices[0];
+                previousVertex = &faceVertices.at(i - 1);
+                currentVertex = &faceVertices.at(i);
+                nextVertex = &faceVertices.at(0);
             } else {
-                previousVertex = &faceVertices[i - 1];
-                currentVertex = &faceVertices[i];
-                nextVertex = &faceVertices[i + 1];
+                previousVertex = &faceVertices.at(i - 1);
+                currentVertex = &faceVertices.at(i);
+                nextVertex = &faceVertices.at(i + 1);
             }
 
             size_t previousIndex = previousVertex->vertexIndex;
             size_t currentIndex = currentVertex->vertexIndex;
             size_t nextIndex = nextVertex->vertexIndex;
 
-            Point& pp0 = vertices[currentIndex];
-            Point& pp1 = vertices[previousIndex];
-            Point& pp2 = vertices[nextIndex];
+            Point& pp0 = vertices.at(currentIndex);
+            Point& pp1 = vertices.at(previousIndex);
+            Point& pp2 = vertices.at(nextIndex);
 
             if (pp0.isDone) {
                 continue;
@@ -403,8 +404,10 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             Vector3f& uv1 = previousVertex->uvw;
             Vector3f& uv2 = nextVertex->uvw;
 
-            Vector3f T, B, N;
-            N = normals[currentIndex];
+            Vector3f T;
+            Vector3f B;
+            Vector3f N;
+            N = normals.at(currentIndex);
 
             Matrix3f mat;
             mat = computeTangentMatrix(pp0, pp1, pp2, uv0, uv1, uv2, T, B, N);
@@ -418,7 +421,7 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             if (udim > texture_data.size()) {
                 displacement << 0, 0, 0;
             } else {
-                Image& img = texture_data[udim - 1];
+                Image& img = texture_data.at(udim - 1);
                 if (img.isEmpty) {
                     displacement << 0, 0, 0;
                 } else {
@@ -434,7 +437,7 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
                 }
             }
             const Vector3f new_pp = pp0 + displacement;
-            tempVertices[currentIndex] = new_pp;
+            tempVertices.at(currentIndex) = new_pp;
 
             pp0.isDone = true;
         }
@@ -442,9 +445,9 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
 
     size_t numVerts = vertices.size();
     for (size_t i = 0; i < numVerts * 3; i += 3) {
-        mesh->m_vertices[i] = tempVertices[i / 3].x();
-        mesh->m_vertices[i + 1] = tempVertices[i / 3].y();
-        mesh->m_vertices[i + 2] = tempVertices[i / 3].z();
+        mesh->m_vertices[i] = tempVertices.at(i / 3).x();
+        mesh->m_vertices[i + 1] = tempVertices.at(i / 3).y();
+        mesh->m_vertices[i + 2] = tempVertices.at(i / 3).z();
     }
 }
 
@@ -473,10 +476,10 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
         // size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
         for (size_t i = 0; i < numFaceVertices; i++) {
 
-            FaceVertex& currentVertex = faceVertices[i];
+            FaceVertex& currentVertex = faceVertices.at(i);
             size_t currentIndex = currentVertex.vertexIndex;
 
-            Point& pp0 = vertices[currentIndex];
+            Point& pp0 = vertices.at(currentIndex);
             if (pp0.isDone) {
                 continue;
             }
@@ -484,7 +487,7 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             Vector3f& uv0 = currentVertex.uvw;
 
             Vector3f N;
-            N = normals[currentIndex];
+            N = normals.at(currentIndex);
 
             float u = uv0.x();
             float v = uv0.y();
@@ -495,7 +498,7 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             if (udim > texture_data.size()) {
                 displacement << 0, 0, 0;
             } else {
-                Image& img = texture_data[udim - 1];
+                Image& img = texture_data.at(udim - 1);
                 if (img.isEmpty) {
                     displacement << 0, 0, 0;
                 } else {
@@ -515,16 +518,16 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             } else {
                 new_pp = pp0 + (N * (displacement.z() - midValue));
             }
-            tempVertices[currentIndex] = new_pp;
+            tempVertices.at(currentIndex) = new_pp;
             pp0.isDone = true;
         }
     }
 
     size_t numVerts = vertices.size();
     for (size_t i = 0; i < numVerts * 3; i += 3) {
-        mesh->m_vertices[i] = tempVertices[i / 3].x();
-        mesh->m_vertices[i + 1] = tempVertices[i / 3].y();
-        mesh->m_vertices[i + 2] = tempVertices[i / 3].z();
+        mesh->m_vertices[i] = tempVertices.at(i / 3).x();
+        mesh->m_vertices[i + 1] = tempVertices.at(i / 3).y();
+        mesh->m_vertices[i + 2] = tempVertices.at(i / 3).z();
     }
 }
 
@@ -538,13 +541,11 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
 void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
     std::vector<Image>& texture_data, float gamma)
 {
-    std::string gmmaStr = std::to_string(gamma);
-
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
         size_t numFaceVertices = faceVertices.size();
         for (size_t i = 0; i < numFaceVertices; i++) {
-            FaceVertex& currentVertex = faceVertices[i];
+            FaceVertex& currentVertex = faceVertices.at(i);
             size_t currentIndex = currentVertex.vertexIndex;
 
             Vector3f& uv0 = currentVertex.uvw;
@@ -559,7 +560,7 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
             Vector3f rgb;
             rgb << 0, 0, 0;
 
-            Image& img = texture_data[udim - 1];
+            Image& img = texture_data.at(udim - 1);
             if (!img.isEmpty) {
                 int width = img.width;
                 int height = img.height;
@@ -586,12 +587,12 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
     }
 }
 
-int remapValue(float oldValue, float oldMin, float oldMax, float newMin, float newMax)
+auto remapValue(const float oldValue, const float oldMin, const float oldMax, const float newMin, const float newMax) -> int
 {
-    float oldRange = oldMax - oldMin;
-    float newRange = newMax - newMin;
-    float newValue = ((oldValue - oldMin) * newRange / oldRange) + newMin;
-    int intValue = static_cast<int>(round(newValue));
+    const float oldRange = oldMax - oldMin;
+    const float newRange = newMax - newMin;
+    const float newValue = ((oldValue - oldMin) * newRange / oldRange) + newMin;
+    const int intValue = static_cast<int>(std::round(newValue));
     return intValue;
 }
 
@@ -604,7 +605,7 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
 {
     size_t numVerts = normals.size();
     for (size_t i = 0; i < numVerts; i++) {
-        Vector3f& nml = normals[i];
+        Vector3f& nml = normals.at(i);
         const float rf = nml.x();
         const float gf = nml.y();
         const float bf = nml.z();
@@ -633,7 +634,7 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
         size_t numFaceVertices = faceVertices.size();
         for (size_t i = 0; i < numFaceVertices; i++) {
-            FaceVertex& currentVertex = faceVertices[i];
+            FaceVertex& currentVertex = faceVertices.at(i);
             size_t currentIndex = currentVertex.vertexIndex;
 
             Vector3f& uv0 = currentVertex.uvw;
@@ -648,7 +649,7 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
             Vector3f rgb;
             rgb << 0, 0, 0;
 
-            Image& img = texture_data[udim - 1];
+            Image& img = texture_data.at(udim - 1);
             if (!img.isEmpty) {
                 int width = img.width;
                 int height = img.height;
