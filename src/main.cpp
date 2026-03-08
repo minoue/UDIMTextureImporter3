@@ -1,5 +1,3 @@
-#define _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS
-
 #include <cstddef>
 #include <filesystem>
 #include <format>
@@ -9,7 +7,6 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
-#include <limits>
 
 #ifdef USE_OPENMP
 #include <omp.h>
@@ -247,7 +244,12 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
 
     // Face array
     int numFaces = mesh->m_faceCount;
+    size_t numUVs = static_cast<size_t>(mesh->m_faceCount) * 8;
+    size_t numFaceVertices = static_cast<size_t>(numFaces) * 4;
     faces.reserve(static_cast<size_t>(numFaces));
+
+    std::span<float> uvs(mesh->m_uvs, numUVs);
+    std::span<int> vertexIndices(mesh->m_vertexIndices, numFaceVertices);
 
     // Loop over all faces
     for (int n = 1; n <= numFaces; n++) {
@@ -257,15 +259,15 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         int arrayIndex3 = 4 * n - 2;
         int arrayIndex4 = 4 * n - 1;
 
-        int vertexIndex1 = mesh->m_vertexIndices[arrayIndex1];
-        int vertexIndex2 = mesh->m_vertexIndices[arrayIndex2];
-        int vertexIndex3 = mesh->m_vertexIndices[arrayIndex3];
-        int vertexIndex4 = mesh->m_vertexIndices[arrayIndex4];
+        int vertexIndex1 = vertexIndices[arrayIndex1]; // NOLINT
+        int vertexIndex2 = vertexIndices[arrayIndex2]; // NOLINT
+        int vertexIndex3 = vertexIndices[arrayIndex3]; // NOLINT
+        int vertexIndex4 = vertexIndices[arrayIndex4]; // NOLINT
 
-        Vector3f& P1 = vertices[static_cast<size_t>(vertexIndex1)];
-        Vector3f& P2 = vertices[static_cast<size_t>(vertexIndex2)];
-        Vector3f& P3 = vertices[static_cast<size_t>(vertexIndex3)];
-        Vector3f& P4 = vertices[static_cast<size_t>(vertexIndex4)];
+        Vector3f& P1 = vertices.at(static_cast<size_t>(vertexIndex1));
+        Vector3f& P2 = vertices.at(static_cast<size_t>(vertexIndex2));
+        Vector3f& P3 = vertices.at(static_cast<size_t>(vertexIndex3));
+        Vector3f& P4 = vertices.at(static_cast<size_t>(vertexIndex4));
 
         int u1_local = 8 * n - 8;
         int v1_local = 8 * n - 7;
@@ -276,14 +278,14 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         int u4_local = 8 * n - 2;
         int v4_local = 8 * n - 1;
 
-        float u1 = mesh->m_uvs[u1_local];
-        float v1 = mesh->m_uvs[v1_local];
-        float u2 = mesh->m_uvs[u2_local];
-        float v2 = mesh->m_uvs[v2_local];
-        float u3 = mesh->m_uvs[u3_local];
-        float v3 = mesh->m_uvs[v3_local];
-        float u4 = mesh->m_uvs[u4_local];
-        float v4 = mesh->m_uvs[v4_local];
+        float u1 = uvs[u1_local]; // NOLINT
+        float v1 = uvs[v1_local]; // NOLINT
+        float u2 = uvs[u2_local]; // NOLINT
+        float v2 = uvs[v2_local]; // NOLINT
+        float u3 = uvs[u3_local]; // NOLINT
+        float v3 = uvs[v3_local]; // NOLINT
+        float u4 = uvs[u4_local]; // NOLINT
+        float v4 = uvs[v4_local]; // NOLINT
 
         Face f;
         f.faceIndex = static_cast<size_t>(faceIndex);
