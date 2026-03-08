@@ -760,9 +760,7 @@ float EXPORT importUDIM(
     delete mesh;
     log.close();
 
-    std::cout << "\nDone.\nPress Enter to close console...\n";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::cin.get();
+    std::cout << "\nDone.\nYou can close the console now.\n";
 
     fclose(fp);
     FreeConsole();
