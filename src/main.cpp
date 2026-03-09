@@ -370,8 +370,8 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     // Apply displacement
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        size_t numFaceVertices = faceVertices.size();
-        size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
+        const size_t numFaceVertices = faceVertices.size();
+        const size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
         for (size_t i = 0; i < numFaceVertices; i++) {
             FaceVertex *previousVertex = nullptr;
             FaceVertex *currentVertex = nullptr;
@@ -390,9 +390,9 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
                 nextVertex = &faceVertices.at(i + 1);
             }
 
-            size_t previousIndex = previousVertex->vertexIndex;
-            size_t currentIndex = currentVertex->vertexIndex;
-            size_t nextIndex = nextVertex->vertexIndex;
+            const size_t previousIndex = previousVertex->vertexIndex;
+            const size_t currentIndex = currentVertex->vertexIndex;
+            const size_t nextIndex = nextVertex->vertexIndex;
 
             Point& pp0 = vertices.at(currentIndex);
             Point& pp1 = vertices.at(previousIndex);
@@ -474,12 +474,12 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     // Apply displacement
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        size_t numFaceVertices = faceVertices.size();
+        const size_t numFaceVertices = faceVertices.size();
         // size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
         for (size_t i = 0; i < numFaceVertices; i++) {
 
             FaceVertex& currentVertex = faceVertices.at(i);
-            size_t currentIndex = currentVertex.vertexIndex;
+            const size_t currentIndex = currentVertex.vertexIndex;
 
             Point& pp0 = vertices.at(currentIndex);
             if (pp0.isDone) {
@@ -504,9 +504,9 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
                 if (img.isEmpty) {
                     displacement << 0, 0, 0;
                 } else {
-                    int width = img.width;
-                    int height = img.height;
-                    int channels = img.nchannels;
+                    const int width = img.width;
+                    const int height = img.height;
+                    const int channels = img.nchannels;
                     float localizedUV[2];
                     Image::localizeUV(localizedUV, u, v);
                     displacement = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width, height, channels);
@@ -545,10 +545,10 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
 {
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        size_t numFaceVertices = faceVertices.size();
+        const size_t numFaceVertices = faceVertices.size();
         for (size_t i = 0; i < numFaceVertices; i++) {
             FaceVertex& currentVertex = faceVertices.at(i);
-            size_t currentIndex = currentVertex.vertexIndex;
+            const size_t currentIndex = currentVertex.vertexIndex;
 
             Vector3f& uv0 = currentVertex.uvw;
             float u = uv0.x();
@@ -564,9 +564,9 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
 
             Image& img = texture_data.at(udim - 1);
             if (!img.isEmpty) {
-                int width = img.width;
-                int height = img.height;
-                int channels = img.nchannels;
+                const int width = img.width;
+                const int height = img.height;
+                const int channels = img.nchannels;
                 float localizedUV[2];
                 Image::localizeUV(localizedUV, u, v);
                 rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
@@ -574,10 +574,10 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
 
                 // Convert 4 8-bit int to a single 32 bit value
                 // https://stackoverflow.com/questions/65136404/c-how-to-store-four-8-bit-integers-as-a-32-bit-unsigned-integer
-                int m = 0;
-                int r = static_cast<int>(round(pow(rgb.x(), 1 / gamma) * 255.0));
-                int g = static_cast<int>(round(pow(rgb.y(), 1 / gamma) * 255.0));
-                int b = static_cast<int>(round(pow(rgb.z(), 1 / gamma) * 255.0));
+                constexpr int m = 0;
+                const int r = static_cast<int>(round(pow(rgb.x(), 1 / gamma) * 255.0));
+                const int g = static_cast<int>(round(pow(rgb.y(), 1 / gamma) * 255.0));
+                const int b = static_cast<int>(round(pow(rgb.z(), 1 / gamma) * 255.0));
                 const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
                 // replace color
@@ -605,7 +605,7 @@ auto remapValue(const float oldValue, const float oldMin, const float oldMax, co
  */
 void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
 {
-    size_t numVerts = normals.size();
+    const size_t numVerts = normals.size();
     for (size_t i = 0; i < numVerts; i++) {
         Vector3f& nml = normals.at(i);
         const float rf = nml.x();
@@ -615,7 +615,7 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
         const int g = remapValue(gf, -1, 1, 0, 255);
         const int b = remapValue(bf, -1, 1, 0, 255);
         constexpr int m = 0;
-        uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
+        const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
         // replace color
         if (mesh->m_mrgb[i] != 0) { // NULL
@@ -634,10 +634,10 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
 {
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        size_t numFaceVertices = faceVertices.size();
+        const size_t numFaceVertices = faceVertices.size();
         for (size_t i = 0; i < numFaceVertices; i++) {
             FaceVertex& currentVertex = faceVertices.at(i);
-            size_t currentIndex = currentVertex.vertexIndex;
+            const size_t currentIndex = currentVertex.vertexIndex;
 
             Vector3f& uv0 = currentVertex.uvw;
             float u = uv0.x();
@@ -653,15 +653,15 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
 
             Image& img = texture_data.at(udim - 1);
             if (!img.isEmpty) {
-                int width = img.width;
-                int height = img.height;
-                int channels = img.nchannels;
+                const int width = img.width;
+                const int height = img.height;
+                const int channels = img.nchannels;
                 float localizedUV[2];
                 Image::localizeUV(localizedUV, u, v);
                 rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                     height, channels);
 
-                uint16_t r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
+                const uint16_t r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
 
                 // replace color
                 if (mesh->m_mask[currentIndex] != 0) { // NULL
