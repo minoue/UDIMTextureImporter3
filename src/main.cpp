@@ -44,7 +44,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         // Get udim in int eg. 1001, 1011
         int udim = Image::getUDIMfromPath(p);
 
-        int udimCount = udim - 1000;
+        int udimCount = udim - 1000; // NOLINT
         if (udimCount > maxUDIM) {
             maxUDIM = udimCount;
         }
@@ -240,7 +240,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     // Init normal array
     normals.resize(static_cast<size_t>(numVerts));
     Vector3f zeroVec(0, 0, 0);
-    std::fill(normals.begin(), normals.end(), zeroVec);
+    std::ranges::fill(normals, zeroVec);
 
     // Face array
     int numFaces = mesh->m_faceCount;
@@ -254,10 +254,10 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
     // Loop over all faces
     for (int n = 1; n <= numFaces; n++) {
         int faceIndex = n - 1;
-        int arrayIndex1 = 4 * n - 4;
-        int arrayIndex2 = 4 * n - 3;
-        int arrayIndex3 = 4 * n - 2;
-        int arrayIndex4 = 4 * n - 1;
+        int arrayIndex1 = (4 * n) - 4;
+        int arrayIndex2 = (4 * n) - 3;
+        int arrayIndex3 = (4 * n) - 2;
+        int arrayIndex4 = (4 * n) - 1;
 
         int vertexIndex1 = vertexIndices[arrayIndex1]; // NOLINT
         int vertexIndex2 = vertexIndices[arrayIndex2]; // NOLINT
@@ -269,14 +269,14 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         Vector3f& P3 = vertices.at(static_cast<size_t>(vertexIndex3));
         Vector3f& P4 = vertices.at(static_cast<size_t>(vertexIndex4));
 
-        int u1_local = 8 * n - 8;
-        int v1_local = 8 * n - 7;
-        int u2_local = 8 * n - 6;
-        int v2_local = 8 * n - 5;
-        int u3_local = 8 * n - 4;
-        int v3_local = 8 * n - 3;
-        int u4_local = 8 * n - 2;
-        int v4_local = 8 * n - 1;
+        int u1_local = (8 * n) - 8;
+        int v1_local = (8 * n) - 7;
+        int u2_local = (8 * n) - 6;
+        int v2_local = (8 * n) - 5;
+        int u3_local = (8 * n) - 4;
+        int v3_local = (8 * n) - 3;
+        int u4_local = (8 * n) - 2;
+        int v4_local = (8 * n) - 1;
 
         float u1 = uvs[u1_local]; // NOLINT
         float v1 = uvs[v1_local]; // NOLINT
@@ -368,8 +368,8 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     tempVertices.resize(vertices.size());
 
     // Apply displacement
-    for (auto& f : faces) {
-        std::vector<FaceVertex>& faceVertices = f.FaceVertices;
+    for (auto& face : faces) {
+        std::vector<FaceVertex>& faceVertices = face.FaceVertices;
         const size_t numFaceVertices = faceVertices.size();
         const size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
         for (size_t i = 0; i < numFaceVertices; i++) {
@@ -661,7 +661,7 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
                 rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
                     height, channels);
 
-                const uint16_t r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
+                const auto r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
 
                 // replace color
                 if (mesh->m_mask[currentIndex] != 0) { // NULL
@@ -679,16 +679,17 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
  * @param [in] pOptBuffer1 : next point of triangle
  * @param [in] pOptBuffer2 : channel ID
  */
-float EXPORT importUDIM(
+auto EXPORT importUDIM(
     char* GoZFilePath,
     double value,
     char* pOptBuffer1,
-    char* pOptBuffer2)
+    char* pOptBuffer2) -> float
 {
     // Open console
     AllocConsole();
-    FILE* fp;
+    FILE* fp = nullptr;
     freopen_s(&fp, "CONOUT$", "w", stdout);
+    freopen_s(&fp, "CONOUT$", "w", stderr);
     freopen_s(&fp, "CONIN$", "r", stdin);
 
     std::filesystem::path path = GoZFilePath;
@@ -719,7 +720,7 @@ float EXPORT importUDIM(
 
     // Mesh
     std::cout << "2/5 : Loading temp mesh : " << GoZFilePath << "\n";
-    GoZ_Mesh* mesh = new GoZ_Mesh;
+    GoZ_Mesh* mesh = new GoZ_Mesh; // NOLINT
     mesh->readMesh(GoZFilePath);
     log << "Mesh obj has been created...\n";
 
@@ -759,12 +760,12 @@ float EXPORT importUDIM(
     log << "Mesh has been saved.\n";
 
     // Close all
-    delete mesh;
+    delete mesh; // NOLINT
     log.close();
 
     std::cout << "\nDone.\nYou can close the console now.\n";
 
-    fclose(fp);
+    // fclose(fp);
     FreeConsole();
 
     return 0.0f;
