@@ -229,10 +229,11 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
 {
     int numVerts = mesh->m_vertexCount;
     vertices.reserve(static_cast<size_t>(numVerts));
+    std::span<float> verts(mesh->m_vertices, static_cast<size_t>(numVerts));
     for (int i = 0; i < numVerts * 3; i += 3) {
-        float x = mesh->m_vertices[i];
-        float y = mesh->m_vertices[i + 1];
-        float z = mesh->m_vertices[i + 2];
+        float x = verts[i]; // NOLINT
+        float y = verts[i + 1]; // NOLINT
+        float z = verts[i + 2]; // NOLINT
         Point b;
         b << x, y, z;
         vertices.push_back(b);
@@ -445,11 +446,12 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
         }
     }
 
-    size_t numVerts = vertices.size();
+    const size_t numVerts = vertices.size();
+    std::span<float> vertices_span(mesh->m_vertices, static_cast<size_t>(mesh->m_vertexCount)*3);
     for (size_t i = 0; i < numVerts * 3; i += 3) {
-        mesh->m_vertices[i] = tempVertices.at(i / 3).x();
-        mesh->m_vertices[i + 1] = tempVertices.at(i / 3).y();
-        mesh->m_vertices[i + 2] = tempVertices.at(i / 3).z();
+        vertices_span[i] = tempVertices.at(i / 3).x(); // NOLINT
+        vertices_span[i + 1] = tempVertices.at(i / 3).y(); // NOLINT
+        vertices_span[i + 2] = tempVertices.at(i / 3).z(); // NOLINT
     }
 }
 
@@ -526,10 +528,11 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     }
 
     size_t numVerts = vertices.size();
+    std::span<float> vertices_span(mesh->m_vertices, static_cast<size_t>(mesh->m_vertexCount)*3);
     for (size_t i = 0; i < numVerts * 3; i += 3) {
-        mesh->m_vertices[i] = tempVertices.at(i / 3).x();
-        mesh->m_vertices[i + 1] = tempVertices.at(i / 3).y();
-        mesh->m_vertices[i + 2] = tempVertices.at(i / 3).z();
+        vertices_span[i] = tempVertices.at(i / 3).x(); // NOLINT
+        vertices_span[i + 1] = tempVertices.at(i / 3).y(); // NOLINT
+        vertices_span[i + 2] = tempVertices.at(i / 3).z(); // NOLINT
     }
 }
 
@@ -543,6 +546,7 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
 void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
     std::vector<Image>& texture_data, float gamma)
 {
+    std::span<unsigned int> rgb_span(mesh->m_mrgb, mesh->m_vertexCount);
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
         const size_t numFaceVertices = faceVertices.size();
@@ -581,8 +585,8 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
                 const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
                 // replace color
-                if (mesh->m_mrgb[currentIndex] != 0) { // NULL
-                    mesh->m_mrgb[currentIndex] = ui32;
+                if (rgb_span[currentIndex] != 0) { // NULL NOLINT
+                    rgb_span[currentIndex] = ui32; // NOLINT
                 }
             }
         }
@@ -632,6 +636,7 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
  */
 void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
 {
+    std::span<unsigned short> mask_span(mesh->m_mask, static_cast<size_t>(mesh->m_vertexCount));
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
         const size_t numFaceVertices = faceVertices.size();
@@ -664,8 +669,8 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
                 const auto r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
 
                 // replace color
-                if (mesh->m_mask[currentIndex] != 0) { // NULL
-                    mesh->m_mask[currentIndex] = r;
+                if (mask_span[currentIndex] != 0) { // NULL NOLINT
+                    mask_span[currentIndex] = r; // NOLINT
                 }
             }
         }
