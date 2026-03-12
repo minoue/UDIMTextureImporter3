@@ -47,7 +47,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         int udim = Image::getUDIMfromPath(p);
 
         int udimCount = udim - 1000; // NOLINT
-        if (udimCount > maxUDIM) {
+        if (udimCount > maxUDIM) { // NOLINT
             maxUDIM = udimCount;
         }
     }
@@ -180,10 +180,10 @@ auto getPixelValue(const float u, const float v,
 
     // Get the first index of RGB values. (array is like [R, G, B, A, R, G, B, A, R, ....] if 4 channels
     // tp1: top-left, tp2: top-right, tp3: bot-left, tp4: bot-right
-    const auto pixelIndex1 = static_cast<size_t>(((width * (y1 - 1) + x1) - 1) * nchannel);
-    const auto pixelIndex2 = static_cast<size_t>(((width * (y1 - 1) + x2) - 1) * nchannel);
-    const auto pixelIndex3 = static_cast<size_t>(((width * (y2 - 1) + x1) - 1) * nchannel);
-    const auto pixelIndex4 = static_cast<size_t>(((width * (y2 - 1) + x2) - 1) * nchannel);
+    const auto pixelIndex1 = static_cast<size_t>(((width * (y1 - 1) + x1) - 1) * nchannel); // NOLINT
+    const auto pixelIndex2 = static_cast<size_t>(((width * (y1 - 1) + x2) - 1) * nchannel); // NOLINT
+    const auto pixelIndex3 = static_cast<size_t>(((width * (y2 - 1) + x1) - 1) * nchannel); // NOLINT
+    const auto pixelIndex4 = static_cast<size_t>(((width * (y2 - 1) + x2) - 1) * nchannel); // NOLINT
 
     Vector3f A;
     A << texture.at(pixelIndex1),
@@ -247,8 +247,8 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
 
     // Face array
     int numFaces = mesh->m_faceCount;
-    size_t numUVs = static_cast<size_t>(mesh->m_faceCount) * 8;
-    size_t numFaceVertices = static_cast<size_t>(numFaces) * 4;
+    size_t numUVs = static_cast<size_t>(mesh->m_faceCount) * 8; // NOLINT
+    size_t numFaceVertices = static_cast<size_t>(numFaces) * 4; // NOLINT
     faces.reserve(static_cast<size_t>(numFaces));
 
     std::span<float> uvs(mesh->m_uvs, numUVs);
@@ -272,14 +272,16 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         Vector3f& P3 = vertices.at(static_cast<size_t>(vertexIndex3));
         Vector3f& P4 = vertices.at(static_cast<size_t>(vertexIndex4));
 
-        int u1_local = (8 * n) - 8;
-        int v1_local = (8 * n) - 7;
-        int u2_local = (8 * n) - 6;
-        int v2_local = (8 * n) - 5;
-        int u3_local = (8 * n) - 4;
-        int v3_local = (8 * n) - 3;
-        int u4_local = (8 * n) - 2;
-        int v4_local = (8 * n) - 1;
+        // there are 8*n uv values, packed 8 by 8, n being the number of faces.
+        // See GoZ_Mesh.h for the specifications.
+        int u1_local = (8 * n) - 8; // NOLINT
+        int v1_local = (8 * n) - 7; // NOLINT
+        int u2_local = (8 * n) - 6; // NOLINT
+        int v2_local = (8 * n) - 5; // NOLINT
+        int u3_local = (8 * n) - 4; // NOLINT
+        int v3_local = (8 * n) - 3; // NOLINT
+        int u4_local = (8 * n) - 2; // NOLINT
+        int v4_local = (8 * n) - 1; // NOLINT
 
         float u1 = uvs[u1_local]; // NOLINT
         float v1 = uvs[v1_local]; // NOLINT
@@ -605,7 +607,7 @@ auto remapValue(const float oldValue, const float oldMin, const float oldMax, co
 }
 
 /**
- * @brief For dubug. Bake world space normal color to the mesh
+ * @brief For debug. Bake world space normal color to the mesh
  * @param [in] mesh : GoZ mesh data
  * @param [in] normals : normal vector array
  */
@@ -624,8 +626,8 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
         const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
 
         // replace color
-        if (mesh->m_mrgb[i] != 0) { // NULL
-            mesh->m_mrgb[i] = ui32;
+        if (mesh->m_mrgb[i] != 0) { // NULL NOLINT
+            mesh->m_mrgb[i] = ui32; // NOLINT
         }
     }
 }
@@ -771,9 +773,6 @@ extern "C" __declspec(dllexport) auto importUDIM(
     log.close();
 
     std::cout << "\nDone.\nYou can close the console now.\n";
-
-    // fclose(fp);
     FreeConsole();
-
-    return 0.0f;
+    return 0.0F;
 }
