@@ -8,6 +8,8 @@
 #include <cstring>
 #include <vector>
 
+#include "Eigen/Dense"
+
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif
@@ -684,7 +686,7 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
  * @param [in] pOptBuffer1 : next point of triangle
  * @param [in] pOptBuffer2 : channel ID
  */
-auto EXPORT importUDIM(
+extern "C" __declspec(dllexport) auto importUDIM(
     char* GoZFilePath,
     double value,
     char* pOptBuffer1,
@@ -775,28 +777,3 @@ auto EXPORT importUDIM(
 
     return 0.0f;
 }
-
-#ifdef _WIN32
-BOOL WINAPI DllMain([[maybe_unused]] HINSTANCE hinstDLL, DWORD fdwReason, [[maybe_unused]] LPVOID lpvReserved)
-{
-    switch (fdwReason) {
-    case DLL_PROCESS_ATTACH:
-        // attach to process
-        // return FALSE to fail DLL load
-        break;
-
-    case DLL_PROCESS_DETACH:
-        // detach from process
-        break;
-
-    case DLL_THREAD_ATTACH:
-        // attach to thread
-        break;
-
-    case DLL_THREAD_DETACH:
-        // detach from thread
-        break;
-    }
-    return TRUE; // successful
-}
-#endif

@@ -1,11 +1,12 @@
+#include <windows.h>
 #include "loader.hpp"
 #include <filesystem>
 #include <fstream>
 
-float EXPORT loaderMain(char* GoZFilePath, double value,
+extern "C" __declspec(dllexport) auto loaderMain(char* GoZFilePath, double value,
     char* pOptBuffer1, [[maybe_unused]] int optBuffer1Size,
     char* pOptBuffer2, [[maybe_unused]] int optBuffer2Size,
-    [[maybe_unused]] char** zData)
+    [[maybe_unused]] char** zData) -> float
 {
 
     std::filesystem::path path = GoZFilePath;

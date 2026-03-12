@@ -1,19 +1,9 @@
 #ifndef __UDIMTextureImporter3_h__
 #define __UDIMTextureImporter3_h__
 
-#include <vector>
-
-#ifdef _WIN32
 #include <windows.h>
-#define EXPORT __declspec(dllexport)
-#endif
-
+#include <vector>
 #include "Eigen/Core"
-#include "Eigen/Dense"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 using namespace Eigen;
 
@@ -34,13 +24,9 @@ struct Face {
     size_t faceIndex;
 };
 
-float EXPORT importUDIM(char* textFromZBrush,
+extern "C" __declspec(dllexport) auto importUDIM(char* textFromZBrush,
     double value,
     char* pOptBuffer1,
-    char* pOptBuffer2);
-
-#ifdef __cplusplus
-}
-#endif
+    char* pOptBuffer2) -> float;
 
 #endif /* __UDIMTextureImporter3_h__ */
