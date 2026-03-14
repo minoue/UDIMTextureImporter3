@@ -57,26 +57,28 @@ void Image::loadExr(const std::string& path)
     int& nchannels = this->nchannels;
     nchannels = 4;
 
-    float* out;
+    float* out = nullptr;
     const char* err = nullptr;
 
     int ret = LoadEXR(&out, &width, &height, path.c_str(), &err);
     if (ret != TINYEXR_SUCCESS) {
-        if (err) {
-            fprintf(stderr, "ERR : %s\n", err);
+        if (err != nullptr) {
+            // fprintf(stderr, "ERR : %s\n", err);
             FreeEXRErrorMessage(err); // release memory of error message.
-            exit(0);
         }
-    } else {
-        int size = width * height * nchannels;
-        this->pixels.resize(static_cast<size_t>(size));
-        for (int i = 0; i < size; i++) {
-            float x = out[i];
-            this->pixels[static_cast<size_t>(i)] = x;
-        }
-
-        free(out); // release memory of image data
+        free(out); // NOLINT
     }
+
+    size_t size = static_cast<size_t>(width * height * nchannels);
+    std::span<float> out_span(out, size);
+    this->pixels.resize(size);
+    for (size_t i = 0; i < size; i++) {
+        // float x = out[i];
+        float x = out_span[i];
+        this->pixels[i] = x;
+    }
+
+    free(out); // release memory of image data NOLINT
 }
 
 void Image::loadTif(const std::string& path)
