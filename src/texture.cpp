@@ -1,8 +1,8 @@
 #define TINYEXR_IMPLEMENTATION
-#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <cmath>
+#include <span>
 
 #include "texture.hpp"
 #include "tiffio.h"
@@ -27,7 +27,7 @@ void Image::localizeUV(float* localUV, const float& u, const float& v)
  * @param[in] path file path, eg. C:/path/to/texture.1001.exr
  * @return : UDIM number as int, eg. 1001, 1011
  */
-int Image::getUDIMfromPath(const std::string& path)
+auto Image::getUDIMfromPath(const std::string& path) -> int
 {
     std::filesystem::path tempPath = path;
     const std::string stem = tempPath.stem().string();
@@ -43,10 +43,10 @@ int Image::getUDIMfromPath(const std::string& path)
  * @param[in] v v value
  * @return : UDIM number without 1001, eg. 1001 is 1, 1011 is 11
  */
-size_t Image::getUDIMfromUV(float u, float v)
+auto Image::getUDIMfromUV(float u, float v) -> size_t
 {
-    size_t U = static_cast<size_t>(std::ceil(u));
-    size_t V = static_cast<size_t>(std::floor(v)) * 10;
+    auto U = static_cast<size_t>(std::ceil(u));
+    auto V = static_cast<size_t>(std::floor(v)) * 10;
     return U + V;
 }
 

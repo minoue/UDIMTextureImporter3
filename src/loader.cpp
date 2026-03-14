@@ -18,7 +18,7 @@ extern "C" __declspec(dllexport) auto loaderMain(char* GoZFilePath, double value
 
     // Get dll path and load
     char loaderPath[MAX_PATH];
-    GetModuleFileNameA(GetModuleHandleA("UDIMTextureImporterLoader.dll"), loaderPath, MAX_PATH);
+    GetModuleFileNameA(GetModuleHandleA("UDIMTextureImporterLoader.dll"), loaderPath, MAX_PATH); // NOLINT
     std::filesystem::path baseDir = std::filesystem::path(loaderPath).parent_path();
     std::filesystem::path dllPath = baseDir / "UDIMTextureImporter3.dll";
 
@@ -26,40 +26,40 @@ extern "C" __declspec(dllexport) auto loaderMain(char* GoZFilePath, double value
     SetDllDirectoryA(baseDir.string().c_str());
 
     // Check if the file exists
-    log << "DLL path: " << dllPath.string() << std::endl;
+    log << "DLL path: " << dllPath.string() << '\n';
     if (std::filesystem::exists(dllPath)) {
-        log << "Main DLL exists" << std::endl;
+        log << "Main DLL exists" << '\n';
     } else {
-        log << "Main DLL doesn't exists" << std::endl;
-        SetDllDirectoryA(NULL);
-        return 1.0f;
+        log << "Main DLL doesn't exists" << '\n';
+        SetDllDirectoryA(nullptr);
+        return 1.0F;
     }
 
     HMODULE hLib = LoadLibraryA(dllPath.string().c_str());
 
-    if (hLib == NULL) {
+    if (hLib == nullptr) {
         // If dll not found
-        log << "Failed to load the main DLL." << std::endl;
-        SetDllDirectoryA(NULL);
-        return 1.0f;
-    } else {
-        log << "UDIMTextureImporter3.dll has been loaded." << std::endl;
+        log << "Failed to load the main DLL." << '\n';
+        SetDllDirectoryA(nullptr);
+        return 1.0F;
     }
 
+    log << "UDIMTextureImporter3.dll has been loaded." << '\n';
+
     // Define function pointer, returning float and takes (char*, double, char*, char*) as arguments
-    typedef float (*PluginFunc)(char*, double, char*, char*);
+    using PluginFunc = float (*)(char*, double, char*, char*);
 
     // Search function address from the dll
-    PluginFunc importUDIM = (PluginFunc)GetProcAddress(hLib, "importUDIM");
+    PluginFunc importUDIM = (PluginFunc)GetProcAddress(hLib, "importUDIM"); // NOLINT
 
-    float result = 0.0f;
+    float result = 0.0F;
 
-    if (importUDIM != NULL) {
-        log << "Running the main logic" << std::endl;
+    if (importUDIM != nullptr) {
+        log << "Running the main logic" << '\n';
         result = importUDIM(GoZFilePath, value, pOptBuffer1, pOptBuffer2);
     } else {
-        log << "The main logic was not executed." << std::endl;
-        result = 1.0f;
+        log << "The main logic was not executed." << '\n';
+        result = 1.0F;
     }
 
     // Release the dll from memory and unlock the file
@@ -67,7 +67,7 @@ extern "C" __declspec(dllexport) auto loaderMain(char* GoZFilePath, double value
     FreeLibrary(hLib);
 
     // Remove after use
-    SetDllDirectoryA(NULL);
+    SetDllDirectoryA(nullptr);
 
     log.close();
 
