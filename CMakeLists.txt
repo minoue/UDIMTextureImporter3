@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.13)
 project(UDIMTextureImporter3)
 set(LOADER_NAME UDIMTextureImporterLoader)
 
-set(DLL_VERSION 0.2.38)
+set(DLL_VERSION 0.2.39)
 
 set(SOURCE_FILES
     src/main.cpp
     src/texture.cpp
-    src/sdk/GoZ_Mesh.cpp
-    src/sdk/GoZ_Utils.cpp
-    src/miniz.c
+    third_party/GoZ/GoZ_Mesh.cpp
+    third_party/GoZ/GoZ_Utils.cpp
+    third_party/tinyexr/miniz.c
 )
 
 set(LOADER_FILES
@@ -49,6 +49,9 @@ include_directories(${TIFF_INCLUDE_DIR})
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
 target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE third_party/tinyexr)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE third_party/GoZ)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE third_party/Eigen)
 
 # Create a library for the intermediate loader dll
 add_library(${LOADER_NAME} SHARED ${LOADER_FILES})

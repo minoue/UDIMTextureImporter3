@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include <vector>
-#include "Eigen/Core"
+#include "../third_party/Eigen/Core"
 
 using namespace Eigen;
 

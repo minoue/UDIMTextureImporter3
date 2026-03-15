@@ -6,7 +6,7 @@
 
 #include "texture.hpp"
 #include "tiffio.h"
-#include "tinyexr.h"
+#include "../third_party/tinyexr/tinyexr.h"
 
 /**
  * @brief Convert uv values to values of UDIM local. eg. (1.5, 1.5) -> (0.5, 0.5)

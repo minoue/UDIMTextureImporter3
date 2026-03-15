@@ -8,15 +8,15 @@
 #include <cstring>
 #include <vector>
 
-#include "Eigen/Dense"
 
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif
 
-#include "main.hpp"
-#include "sdk/GoZ_Mesh.h"
 #include "texture.hpp"
+#include "../third_party/GoZ/GoZ_Mesh.h"
+#include "../third_party/Eigen/Dense"
+#include "main.hpp"
 
 using namespace Eigen;
 
