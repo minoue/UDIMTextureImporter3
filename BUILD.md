@@ -17,36 +17,38 @@
 1. Build zlib and deflate, then build libtiff with the first two libraries.
 2. Move `zlib.dll`, `deflate.dll`, and `libtiff.dll` to `UDIMTextureImporter3Data` folder
 2. Download third party libraries.
-    1. Download [`miniz.c` and `miniz.h`](https://github.com/richgel999/miniz/releases) and move to src directory.
-    2. Download `tinyexr.h` and move to src directory.
-    3. Download [GoZ_SDK](https://developers.maxon.net/forum/topic/15246/zbrush-sdk-overview), and move all files to sdk directory.
-    4. Download [Eigen](https://eigen.tuxfamily.org/) and move to the src directory.
+    1. Download [`miniz.c` and `miniz.h`](https://github.com/richgel999/miniz/releases) and move to the third_party/tinyexr directory.
+    2. Download `tinyexr.h` and move to the third_party/tinyexr directory.
+    3. Download [GoZ_SDK](https://developers.maxon.net/forum/topic/15246/zbrush-sdk-overview), and move all files to the third_party/GoZ directory.
+    4. Download [Eigen](https://eigen.tuxfamily.org/) and move to the third_party directory.
 
 3. So the project directory should be like this.
     ```
     └── UDIMTextureImporter3Data/
         ├── CMakeLists.txt
         ├── build/
+        ├── third_party/
+        │   ├── tinyexr/
+        │   │   ├── miniz.c
+        │   │   ├── miniz.h
+        │   │   └── tinyexr.h  
+        │   ├── Eigen/
+        │   │   ├── Core
+        │   │   ├── Dense
+        │   │   └── ...
+        │   └── GoZ/
+        │       ├── GoZ_Mesh.cpp
+        │       ├── GoZ_***
+        │       └── ...
         └── src/
             ├── loader.cpp
             ├── loader.hpp
             ├── main.cpp
             ├── main.hpp
             ├── texture.cpp
-            ├── texture.hpp
-            ├── miniz.c
-            ├── miniz.h
-            ├── tinyexr.h
-            ├── sdk/
-            │   ├── GoZ_Mesh.cpp
-            │   ├── GoZ_***
-            │   └── ...
-            └── Eigen/
-                ├── Core
-                ├── Dense
-                └── ...
+            └── texture.hpp
     ```
-   
+
 ### Build
 
 #### Windows
@@ -61,7 +63,7 @@ If CMake cannot find the libtiff libraries or include directories, try specifyin
 cmake -DTIFF_INSTALL_DIR="C:/opt" ../
 ```
 (Assuming the header files and library files are installed in C:/opt/include and C:/opt/lib respectively.)
-#### Linux
+#### Linux (mingw64)
 ```sh
 1. mkdir build
 2. cd build
