@@ -9,17 +9,18 @@
 #include "../third_party/tinyexr/tinyexr.h"
 
 /**
- * @brief Convert uv values to values of UDIM local. eg. (1.5, 1.5) -> (0.5, 0.5)
+ * @brief Convert global uv values to values of UDIM local. eg. (1.5, 1.5) -> (0.5, 0.5)
  * @param[out] localUV UDIM localizwed UV values
  * @param[in] u global u value
  * @param[in] v global v value
+ * @return : UV in UDIM local
  */
-void Image::localizeUV(float* localUV, const float& u, const float& v)
+auto Image::localizeUV(const UV& uv) -> UV
 {
-    float u_local = u - std::floor(u);
-    float v_local = v - std::floor(v);
-    localUV[0] = u_local;
-    localUV[1] = v_local;
+    float u_local = uv.u - std::floor(uv.u);
+    float v_local = uv.v - std::floor(uv.v);
+    UV localUV(u_local, v_local);
+    return localUV;
 }
 
 /**
@@ -41,12 +42,12 @@ auto Image::getUDIMfromPath(const std::string& path) -> int
  * @brief Get UDIM from UV value
  * @param[in] u u value
  * @param[in] v v value
- * @return : UDIM number without 1001, eg. 1001 is 1, 1011 is 11
+ * @return : UDIM number without 1000, eg. 1 as 1001, 11 as 1011.
  */
-auto Image::getUDIMfromUV(float u, float v) -> size_t
+auto Image::getUDIMfromUV(const UV& uv) -> size_t
 {
-    auto U = static_cast<size_t>(std::ceil(u));
-    auto V = static_cast<size_t>(std::floor(v)) * 10;
+    auto U = static_cast<size_t>(std::ceil(uv.u));
+    auto V = static_cast<size_t>(std::floor(uv.v)) * 10; //NOLINT
     return U + V;
 }
 
@@ -69,7 +70,7 @@ void Image::loadExr(const std::string& path)
         free(out); // NOLINT
     }
 
-    size_t size = static_cast<size_t>(width * height * nchannels);
+    size_t size = static_cast<size_t>(width * height * nchannels); // NOLINT
     std::span<float> out_span(out, size);
     this->pixels.resize(size);
     for (size_t i = 0; i < size; i++) {

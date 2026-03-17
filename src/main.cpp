@@ -447,9 +447,8 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             Matrix3f mat;
             mat = computeTangentMatrix(pp0, pp1, pp2, uv0, uv1, uv2, T, B, N);
 
-            float u = uv0.x();
-            float v = uv0.y();
-            size_t udim = Image::getUDIMfromUV(u, v);
+            UV uv_global(uv0.x(), uv0.y());
+            size_t udim = Image::getUDIMfromUV(uv_global);
 
             Vector3f displacement;
 
@@ -463,10 +462,9 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
                     const int width = img.width;
                     const int height = img.height;
                     const int channels = img.nchannels;
-                    float localizedUV[2];
-                    Image::localizeUV(localizedUV, u, v);
+                    UV uv_local = Image::localizeUV(uv_global);
                     Vector3f rgb;
-                    rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
+                    rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
                         height, channels);
                     displacement = rgb.transpose() * mat;
                 }
@@ -525,9 +523,8 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             Vector3f N;
             N = normals.at(currentIndex);
 
-            float u = uv0.x();
-            float v = uv0.y();
-            size_t udim = Image::getUDIMfromUV(u, v);
+            UV uv_global(uv0.x(), uv0.y());
+            size_t udim = Image::getUDIMfromUV(uv_global);
 
             Vector3f displacement;
 
@@ -541,9 +538,8 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
                     const int width = img.width;
                     const int height = img.height;
                     const int channels = img.nchannels;
-                    float localizedUV[2];
-                    Image::localizeUV(localizedUV, u, v);
-                    displacement = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width, height, channels);
+                    UV uv_local = Image::localizeUV(uv_global);
+                    displacement = getPixelValue(uv_local.u, uv_local.v, img.pixels, width, height, channels);
                 }
             }
             Vector3f new_pp;
@@ -587,9 +583,8 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
             const size_t currentIndex = currentVertex.vertexIndex;
 
             Vector3f& uv0 = currentVertex.uvw;
-            float u = uv0.x();
-            float v = uv0.y();
-            size_t udim = Image::getUDIMfromUV(u, v);
+            UV uv_global(uv0.x(), uv0.y());
+            size_t udim = Image::getUDIMfromUV(uv_global);
 
             if (udim > texture_data.size()) {
                 continue;
@@ -603,9 +598,8 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
                 const int width = img.width;
                 const int height = img.height;
                 const int channels = img.nchannels;
-                float localizedUV[2];
-                Image::localizeUV(localizedUV, u, v);
-                rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
+                UV uv_local = Image::localizeUV(uv_global);
+                rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
                     height, channels);
 
                 // Convert 4 8-bit int to a single 32 bit value
@@ -677,9 +671,8 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
             const size_t currentIndex = currentVertex.vertexIndex;
 
             Vector3f& uv0 = currentVertex.uvw;
-            float u = uv0.x();
-            float v = uv0.y();
-            size_t udim = Image::getUDIMfromUV(u, v);
+            UV uv_global(uv0.x(), uv0.y());
+            size_t udim = Image::getUDIMfromUV(uv_global);
 
             if (udim > texture_data.size()) {
                 continue;
@@ -693,9 +686,8 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
                 const int width = img.width;
                 const int height = img.height;
                 const int channels = img.nchannels;
-                float localizedUV[2];
-                Image::localizeUV(localizedUV, u, v);
-                rgb = getPixelValue(localizedUV[0], localizedUV[1], img.pixels, width,
+                UV uv_local = Image::localizeUV(uv_global);
+                rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
                     height, channels);
 
                 const auto r = static_cast<uint16_t>(round(rgb.x() * 65535.0));

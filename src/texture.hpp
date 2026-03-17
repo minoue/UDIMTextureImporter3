@@ -3,6 +3,13 @@
 #include <string>
 #include <vector>
 
+
+struct UV {
+    float u, v;
+    UV(const float& a, const float& b) : u(a), v(b) {} // NOLINT
+};
+
+
 class Image {
 public:
     Image() = default;
@@ -14,10 +21,10 @@ public:
     bool isEmpty = true;
     void loadExr(const std::string& path);
     void loadTif(const std::string& path);
-
-    static void localizeUV(float* localUV, const float& u, const float& v);
+    
+    static auto localizeUV(const UV& uv) -> UV;
     static auto getUDIMfromPath(const std::string& path) -> int;
-    static auto getUDIMfromUV(float u, float v) -> size_t;
+    static auto getUDIMfromUV(const UV& uv) -> size_t;
 
 private:
 };
