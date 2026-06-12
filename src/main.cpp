@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <filesystem>
-#include <format>
+// #include <format>
 #include <fstream>
 #include <iostream>
 #include <ranges>
@@ -85,19 +85,20 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
                 std::cout << "Not supported file format" << "\n";
             }
             int udim = Image::getUDIMfromPath(path.string());
-            int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc..
+            int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc.. NOLINT
             data.at(static_cast<size_t>(udimCount) - 1) = std::move(img);
-            auto msg = std::format("{}/{} : ", index, numPaths);
+            // auto msg = std::format("{}/{} : ", index, numPaths);
 
             // Show progress bar
             {
                 int loaded = ++loadedCount;
                 std::scoped_lock lock(coutMutex);
                 // std::lock_guard<std::mutex> lock(coutMutex);
-                float percent = static_cast<float>(loaded) / numPaths * 100.0f;
+                float percent = static_cast<float>(loaded) / static_cast<float>(numPaths) * 100.0F;
                 std::cout << "\r[";
-                const int bar = static_cast<int>(percent / 2.5f);
-                for (int b = 0; b < 40; b++) {
+                const int bar = static_cast<int>(percent / 2.5F);
+                const int bar_length = 40;
+                for (int b = 0; b < bar_length; b++) {
                     std::cout << (b < bar ? "#" : "-");
                 }
                 std::cout << "] " << loaded << "/" << numPaths << " (" << static_cast<int>(percent) << "%)" << std::flush;
@@ -106,6 +107,7 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
     };
 
     std::vector<std::thread> threads;
+    threads.reserve(numThreads);
     for (unsigned int i = 0; i < numThreads; ++i) {
         threads.emplace_back(worker);
     }
