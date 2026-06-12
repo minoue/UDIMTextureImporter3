@@ -95,71 +95,93 @@ void Image::loadExr(const std::string& path)
 void Image::loadTif(const std::string& path)
 {
     TIFF* tif = TIFFOpen(path.c_str(), "r");
+    if (tif == nullptr) {
+        throw std::runtime_error("Failed to open TIFF: " + path);
+    }
 
-    if (tif) {
-        uint32_t width, height;
-        tdata_t buf;
-        uint16_t bitDepth, nchannels;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint16_t bitDepth = 0;
+    uint16_t nchannels = 0;
+    uint16_t planarConfig = PLANARCONFIG_CONTIG;
 
-        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
-        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
-        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &nchannels);
-        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bitDepth);
+    if (TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height) != 1
+        || TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width) != 1) {
+        TIFFClose(tif);
+        throw std::runtime_error("Failed to read the TIFF image size: " + path);
+    }
 
-        this->nchannels = static_cast<int>(nchannels);
-        this->width = static_cast<int>(width);
-        this->height = static_cast<int>(height);
-        this->pixels.reserve(width * height * nchannels);
+    // These tags may be omitted, in which case libtiff provides the defaults
+    TIFFGetFieldDefaulted(tif, TIFFTAG_SAMPLESPERPIXEL, &nchannels);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_BITSPERSAMPLE, &bitDepth);
+    TIFFGetFieldDefaulted(tif, TIFFTAG_PLANARCONFIG, &planarConfig);
 
-        std::string chaStr = "Number of channels: " + std::to_string(nchannels);
-        OutputDebugString(chaStr.c_str());
+    std::string error;
+    if (TIFFIsTiled(tif) != 0) {
+        error = "Tiled TIFF is not supported, save it as scanline/strip: " + path;
+    } else if (nchannels != 1 && nchannels != 3 && nchannels != 4) {
+        error = "Unsupported number of TIFF channels (" + std::to_string(nchannels)
+            + "), only 1 (grayscale), 3 (RGB) and 4 (RGBA) are supported: " + path;
+    } else if (bitDepth != 8 && bitDepth != 16 && bitDepth != 32) {
+        error = "Unsupported TIFF bit depth (" + std::to_string(bitDepth)
+            + "), only 8, 16 and 32 bit are supported: " + path;
+    } else if (nchannels != 1 && planarConfig != PLANARCONFIG_CONTIG) {
+        error = "Separate-plane TIFF is not supported: " + path;
+    }
+    if (!error.empty()) {
+        TIFFClose(tif);
+        throw std::runtime_error(error);
+    }
 
-        std::string depthStr = "Bit depth is : " + std::to_string(bitDepth);
-        OutputDebugString(depthStr.c_str());
+    this->width = static_cast<int>(width);
+    this->height = static_cast<int>(height);
+    // Grayscale pixels are expanded to RGB below so the sampling code can
+    // always read 3 values per pixel
+    this->nchannels = (nchannels == 1) ? 3 : static_cast<int>(nchannels);
+    this->pixels.reserve(static_cast<size_t>(width) * height * static_cast<size_t>(this->nchannels));
 
-        buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    tdata_t buf = _TIFFmalloc(TIFFScanlineSize(tif));
+    if (buf == nullptr) {
+        TIFFClose(tif);
+        throw std::runtime_error("Failed to allocate the TIFF scanline buffer: " + path);
+    }
 
-        for (unsigned int row = 0; row < height; row++) {
-            TIFFReadScanline(tif, buf, row);
-            for (unsigned int col = 0; col < width; col++) {
-                if (bitDepth == 32) {
-                    float r = static_cast<float*>(buf)[col * uint16_t(nchannels) + 0];
-                    float g = static_cast<float*>(buf)[col * uint16_t(nchannels) + 1];
-                    float b = static_cast<float*>(buf)[col * uint16_t(nchannels) + 2];
-                    this->pixels.push_back(r);
-                    this->pixels.push_back(g);
-                    this->pixels.push_back(b);
-                    if (nchannels == 4) {
-                        float a = static_cast<float*>(buf)[col * uint16_t(nchannels) + 3];
-                        this->pixels.push_back(a);
-                    }
-                } else if (bitDepth == 16) {
-                    uint16_t r = static_cast<uint16_t*>(buf)[col * nchannels + 0];
-                    uint16_t g = static_cast<uint16_t*>(buf)[col * nchannels + 1];
-                    uint16_t b = static_cast<uint16_t*>(buf)[col * nchannels + 2];
-                    this->pixels.push_back(float(r / 65535.0));
-                    this->pixels.push_back(float(g / 65535.0));
-                    this->pixels.push_back(float(b / 65535.0));
-                    if (nchannels == 4) {
-                        uint16_t a = static_cast<uint16_t*>(buf)[col * nchannels + 3];
-                        this->pixels.push_back(float(a / 65535.0));
-                    }
-                } else {
-                    // 8-bit
-                    uint16_t r = static_cast<uint8_t*>(buf)[col * nchannels + 0];
-                    uint16_t g = static_cast<uint8_t*>(buf)[col * nchannels + 1];
-                    uint16_t b = static_cast<uint8_t*>(buf)[col * nchannels + 2];
-                    this->pixels.push_back(float(r / 255.0));
-                    this->pixels.push_back(float(g / 255.0));
-                    this->pixels.push_back(float(b / 255.0));
-                    if (nchannels == 4) {
-                        uint16_t a = static_cast<uint8_t*>(buf)[col * nchannels + 3];
-                        this->pixels.push_back(float(a / 255.0));
-                    }
+    auto readSample = [buf, bitDepth, nchannels](uint32_t col, uint16_t channel) -> float {
+        const size_t i = (static_cast<size_t>(col) * nchannels) + channel;
+        if (bitDepth == 32) {
+            return static_cast<float*>(buf)[i]; // NOLINT
+        }
+        if (bitDepth == 16) {
+            return static_cast<float>(static_cast<uint16_t*>(buf)[i]) / 65535.0F; // NOLINT
+        }
+        // 8-bit
+        return static_cast<float>(static_cast<uint8_t*>(buf)[i]) / 255.0F; // NOLINT
+    };
+
+    for (uint32_t row = 0; row < height; row++) {
+        if (TIFFReadScanline(tif, buf, row) != 1) {
+            _TIFFfree(buf);
+            TIFFClose(tif);
+            throw std::runtime_error("Failed to read a TIFF scanline (row "
+                + std::to_string(row) + "): " + path);
+        }
+        for (uint32_t col = 0; col < width; col++) {
+            if (nchannels == 1) {
+                // Grayscale: store the single value as R, G and B
+                const float v = readSample(col, 0);
+                this->pixels.push_back(v);
+                this->pixels.push_back(v);
+                this->pixels.push_back(v);
+            } else {
+                this->pixels.push_back(readSample(col, 0));
+                this->pixels.push_back(readSample(col, 1));
+                this->pixels.push_back(readSample(col, 2));
+                if (nchannels == 4) {
+                    this->pixels.push_back(readSample(col, 3));
                 }
             }
         }
-        _TIFFfree(buf);
-        TIFFClose(tif);
     }
+    _TIFFfree(buf);
+    TIFFClose(tif);
 }

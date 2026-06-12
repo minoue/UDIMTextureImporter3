@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(UDIMTextureImporter3)
 set(LOADER_NAME UDIMTextureImporterLoader)
 
-set(DLL_VERSION 0.3.8)
+set(DLL_VERSION 0.3.9)
 
 # Embed a VERSIONINFO resource so the version shows up in the Windows
 # file properties (Details tab), and pass the version string to the code
