@@ -46,6 +46,12 @@ auto Image::getUDIMfromPath(const std::string& path) -> int
  */
 auto Image::getUDIMfromUV(const UV& uv) -> size_t
 {
+    // UVs at exactly 0 or negative are outside any UDIM tile. Return 0 so
+    // callers can skip them. This also avoids casting a negative float to
+    // size_t, which is undefined behavior.
+    if (uv.u <= 0.0F || uv.v <= 0.0F) {
+        return 0;
+    }
     auto U = static_cast<size_t>(std::ceil(uv.u));
     auto V = static_cast<size_t>(std::floor(uv.v)) * 10; //NOLINT
     return U + V;

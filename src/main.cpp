@@ -473,7 +473,8 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
 
             Vector3f displacement;
 
-            if (udim > texture_data.size()) {
+            // udim == 0 means the UV is invalid (zero or negative)
+            if (udim == 0 || udim > texture_data.size()) {
                 displacement << 0, 0, 0;
             } else {
                 Image& img = texture_data.at(udim - 1);
@@ -547,6 +548,14 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
             UV uv_global(uv0.x(), uv0.y());
             size_t udim = Image::getUDIMfromUV(uv_global);
 
+            // udim == 0 means the UV is invalid (zero or negative), so leave
+            // the vertex untouched instead of pushing it by -midValue below
+            if (udim == 0) {
+                tempVertices.at(currentIndex) = pp0;
+                pp0.isDone = true;
+                continue;
+            }
+
             Vector3f displacement;
 
             if (udim > texture_data.size()) {
@@ -607,7 +616,8 @@ void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
             UV uv_global(uv0.x(), uv0.y());
             size_t udim = Image::getUDIMfromUV(uv_global);
 
-            if (udim > texture_data.size()) {
+            // udim == 0 means the UV is invalid (zero or negative)
+            if (udim == 0 || udim > texture_data.size()) {
                 continue;
             }
 
@@ -695,7 +705,8 @@ void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image
             UV uv_global(uv0.x(), uv0.y());
             size_t udim = Image::getUDIMfromUV(uv_global);
 
-            if (udim > texture_data.size()) {
+            // udim == 0 means the UV is invalid (zero or negative)
+            if (udim == 0 || udim > texture_data.size()) {
                 continue;
             }
 
