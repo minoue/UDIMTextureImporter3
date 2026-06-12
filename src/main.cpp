@@ -91,14 +91,16 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
             std::filesystem::path& path = paths.at(static_cast<size_t>(index));
             std::string ext = path.extension().string();
             Image img;
-            img.isEmpty = false;
             if (ext == ".exr") {
                 img.loadExr(path.string());
             } else if (ext == ".tif" || ext == ".tiff") {
                 img.loadTif(path.string());
             } else {
-                std::cout << "Not supported file format" << "\n";
+                throw std::runtime_error("Unsupported file format: " + path.string());
             }
+            // Mark as loaded only after the loader succeeded, so a failed
+            // image is never sampled later
+            img.isEmpty = false;
             int udim = Image::getUDIMfromPath(path.string());
             int udimCount = udim - 1000; // Convert 1001 to 1, 1011 to 11, etc.. NOLINT
             data.at(static_cast<size_t>(udimCount) - 1) = std::move(img);

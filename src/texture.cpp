@@ -1,5 +1,6 @@
 #define TINYEXR_IMPLEMENTATION
 #include <filesystem>
+#include <stdexcept>
 #include <string>
 #include <cmath>
 #include <span>
@@ -69,11 +70,14 @@ void Image::loadExr(const std::string& path)
 
     int ret = LoadEXR(&out, &width, &height, path.c_str(), &err);
     if (ret != TINYEXR_SUCCESS) {
+        std::string message = "Failed to load EXR: " + path;
         if (err != nullptr) {
-            // fprintf(stderr, "ERR : %s\n", err);
+            message += " : ";
+            message += err;
             FreeEXRErrorMessage(err); // release memory of error message.
         }
         free(out); // NOLINT
+        throw std::runtime_error(message);
     }
 
     size_t size = static_cast<size_t>(width * height * nchannels); // NOLINT
