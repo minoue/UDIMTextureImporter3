@@ -23,6 +23,10 @@
 
 using namespace Eigen;
 
+#ifndef DLL_VERSION_STRING
+#define DLL_VERSION_STRING "unknown"
+#endif
+
 /**
  * @brief Split texture path array
  * @param [in] pathStringArray : Long string containing paths eg. "C:/path/image.1001.exr C:/path/image.1002.exr C:..."
@@ -796,6 +800,9 @@ extern "C" __declspec(dllexport) auto importUDIM(
 
         // Convert/Split long path string to path array
         std::string pathStringArray(pOptBuffer1);
+
+        std::cout << "UDIMTextureImporter3 v" << DLL_VERSION_STRING << "\n";
+        log << "UDIMTextureImporter3 v" << DLL_VERSION_STRING << '\n';
 
         std::cout << "[!!!] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [!!!]\n";
 

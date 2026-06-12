@@ -3,6 +3,10 @@
 #include <filesystem>
 #include <fstream>
 
+#ifndef DLL_VERSION_STRING
+#define DLL_VERSION_STRING "unknown"
+#endif
+
 extern "C" __declspec(dllexport) auto loaderMain(char* GoZFilePath, double value,
     char* pOptBuffer1, [[maybe_unused]] int optBuffer1Size,
     char* pOptBuffer2, [[maybe_unused]] int optBuffer2Size,
@@ -15,6 +19,7 @@ extern "C" __declspec(dllexport) auto loaderMain(char* GoZFilePath, double value
     path.replace_filename("UDIMTextureImporterLoader.log");
     std::ofstream log(path.string());
     log.clear();
+    log << "UDIMTextureImporterLoader v" << DLL_VERSION_STRING << '\n';
 
     // Get dll path and load
     char loaderPath[MAX_PATH];

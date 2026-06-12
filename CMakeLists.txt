@@ -2,7 +2,23 @@ cmake_minimum_required(VERSION 3.13)
 project(UDIMTextureImporter3)
 set(LOADER_NAME UDIMTextureImporterLoader)
 
-set(DLL_VERSION 0.3.6)
+set(DLL_VERSION 0.3.7)
+
+# Embed a VERSIONINFO resource so the version shows up in the Windows
+# file properties (Details tab), and pass the version string to the code
+enable_language(RC)
+string(REPLACE "." ";" DLL_VERSION_LIST ${DLL_VERSION})
+list(GET DLL_VERSION_LIST 0 DLL_VERSION_MAJOR)
+list(GET DLL_VERSION_LIST 1 DLL_VERSION_MINOR)
+list(GET DLL_VERSION_LIST 2 DLL_VERSION_PATCH)
+
+set(RC_TARGET_NAME UDIMTextureImporter3)
+set(RC_FILE_DESCRIPTION "UDIM Texture Importer for ZBrush")
+configure_file(src/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version_main.rc @ONLY)
+
+set(RC_TARGET_NAME UDIMTextureImporterLoader)
+set(RC_FILE_DESCRIPTION "Loader for UDIMTextureImporter3")
+configure_file(src/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version_loader.rc @ONLY)
 
 set(SOURCE_FILES
     src/main.cpp
@@ -10,10 +26,12 @@ set(SOURCE_FILES
     third_party/GoZ/GoZ_Mesh.cpp
     third_party/GoZ/GoZ_Utils.cpp
     third_party/tinyexr/miniz.c
+    ${CMAKE_CURRENT_BINARY_DIR}/version_main.rc
 )
 
 set(LOADER_FILES
     src/loader.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/version_loader.rc
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -48,6 +66,7 @@ include_directories(${TIFF_INCLUDE_DIR})
 # Create a library for the main dll
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
+target_compile_definitions(${PROJECT_NAME} PRIVATE DLL_VERSION_STRING="${DLL_VERSION}")
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE third_party/tinyexr)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE third_party/GoZ)
@@ -56,6 +75,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE third_party/Eigen)
 # Create a library for the intermediate loader dll
 add_library(${LOADER_NAME} SHARED ${LOADER_FILES})
 set_target_properties(${LOADER_NAME} PROPERTIES PREFIX "" SUFFIX ".dll")
+target_compile_definitions(${LOADER_NAME} PRIVATE DLL_VERSION_STRING="${DLL_VERSION}")
 
 if(CMAKE_HOST_SYSTEM_NAME MATCHES "Windows")
     # Windows
