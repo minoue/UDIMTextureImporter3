@@ -297,10 +297,14 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         int vertexIndex3 = vertexIndices[arrayIndex3]; // NOLINT
         int vertexIndex4 = vertexIndices[arrayIndex4]; // NOLINT
 
+        // The 4th index is -1 for triangles (GoZ_TAG_FACE4_LIST_FORMAT_1),
+        // so P4 must not be looked up then
+        const bool isQuad = vertexIndex4 != -1;
+
         Vector3f& P1 = vertices.at(static_cast<size_t>(vertexIndex1));
         Vector3f& P2 = vertices.at(static_cast<size_t>(vertexIndex2));
         Vector3f& P3 = vertices.at(static_cast<size_t>(vertexIndex3));
-        Vector3f& P4 = vertices.at(static_cast<size_t>(vertexIndex4));
+        Vector3f& P4 = isQuad ? vertices.at(static_cast<size_t>(vertexIndex4)) : P3;
 
         // there are 8*n uv values, packed 8 by 8, n being the number of faces.
         // See GoZ_Mesh.h for the specifications.
@@ -344,7 +348,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         f.FaceVertices.push_back(FV3);
 
         // If not triangle
-        if (vertexIndex4 != -1) {
+        if (isQuad) {
             FaceVertex FV4;
             FV4.pointPosition = P4;
             FV4.uvw << u4, v4, 0;
@@ -354,9 +358,13 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
 
         faces.push_back(f);
 
+        // Each point's normal is the cross product of the edges to its two
+        // neighbours. For triangles the previous neighbour of P1 is P3 (not
+        // P4) and the next neighbour of P3 is P1.
+
         // first point
         Vector3f Vec1 = P2 - P1;
-        Vector3f Vec2 = P4 - P1;
+        Vector3f Vec2 = (isQuad ? P4 : P3) - P1;
         Vector3f N1 = Vec1.cross(Vec2);
         normals.at(static_cast<size_t>(vertexIndex1)) += N1;
 
@@ -367,13 +375,13 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         normals.at(static_cast<size_t>(vertexIndex2)) += N2;
 
         // third point
-        Vector3f Vec5 = P4 - P3;
+        Vector3f Vec5 = (isQuad ? P4 : P1) - P3;
         Vector3f Vec6 = P2 - P3;
         Vector3f N3 = Vec5.cross(Vec6);
         normals.at(static_cast<size_t>(vertexIndex3)) += N3;
 
         // forth point
-        if (vertexIndex4 != -1) {
+        if (isQuad) {
             Vector3f Vec7 = P1 - P4;
             Vector3f Vec8 = P2 - P4;
             Vector3f N4 = Vec7.cross(Vec8);
