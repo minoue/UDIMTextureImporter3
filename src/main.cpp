@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstddef>
+#include <exception>
 #include <filesystem>
 // #include <format>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <ranges>
 #include <cstdio>
 #include <cstring>
+#include <stdexcept>
 #include <vector>
 
 
@@ -58,17 +60,25 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
     int numPaths = static_cast<int>(paths.size());
 
     // Create texture data
+    // hardware_concurrency() may return 0, so make sure we get at least 1 thread
     const unsigned int numThreads = (std::min)(
         static_cast<unsigned int>(numPaths),
-        std::thread::hardware_concurrency()
+        (std::max)(1U, std::thread::hardware_concurrency())
         );
 
     std::atomic<int> nextIndex(0);
     std::mutex coutMutex;
     std::atomic<int> loadedCount(0);
 
+    // An exception escaping a worker thread calls std::terminate, so capture
+    // the first one here and rethrow it on the main thread after join
+    std::atomic<bool> hasError(false);
+    std::exception_ptr workerError = nullptr;
+    std::mutex errorMutex;
+
     auto worker = [&]() -> void {
-        while (true) {
+        try {
+        while (!hasError.load()) {
             int index = nextIndex.fetch_add(1);
             if (index >= numPaths) {
                 break;
@@ -105,6 +115,13 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
                 std::cout << "] " << loaded << "/" << numPaths << " (" << static_cast<int>(percent) << "%)" << std::flush;
             }
         }
+        } catch (...) {
+            hasError.store(true);
+            std::scoped_lock lock(errorMutex);
+            if (workerError == nullptr) {
+                workerError = std::current_exception();
+            }
+        }
     };
 
     std::vector<std::thread> threads;
@@ -117,6 +134,10 @@ void initTextures(std::string& pathStringArray, std::vector<Image>& data)
         thread.join();
     }
     std::cout << "\n";
+
+    if (workerError != nullptr) {
+        std::rethrow_exception(workerError);
+    }
 }
 
 /**
@@ -760,71 +781,97 @@ extern "C" __declspec(dllexport) auto importUDIM(
     std::ofstream log(path.string());
     log.clear();
 
-    // Find import type
-    // RGB : Vector displacement
-    // R, G or B : Normal Displacement
-    // COL : Color
-    // MSK : Mask
-    char* channel = pOptBuffer2;
+    float result = 0.0F;
+    GoZ_Mesh* mesh = nullptr; // NOLINT
 
-    // Convert/Split long path string to path array
-    std::string pathStringArray(pOptBuffer1);
-     
-    std::cout << "[!!!] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [!!!]\n";
+    // An exception must not cross the DLL boundary back into ZBrush,
+    // so catch everything here and return an error code instead
+    try {
+        // Find import type
+        // RGB : Vector displacement
+        // R, G or B : Normal Displacement
+        // COL : Color
+        // MSK : Mask
+        char* channel = pOptBuffer2;
 
-    // Textures
-    std::cout << "1/5 : Loading textures...\n";
+        // Convert/Split long path string to path array
+        std::string pathStringArray(pOptBuffer1);
 
-    std::vector<Image> texture_data;
-    initTextures(pathStringArray, texture_data);
-    log << "Textures are initialized\n";
+        std::cout << "[!!!] If this log does not scroll automatically or the process appears to have stopped, try pressing Enter. [!!!]\n";
 
-    // Mesh
-    std::cout << "2/5 : Loading temp mesh : " << GoZFilePath << "\n";
-    GoZ_Mesh* mesh = new GoZ_Mesh; // NOLINT
-    mesh->readMesh(GoZFilePath);
-    log << "Mesh obj has been created...\n";
+        // Textures
+        std::cout << "1/5 : Loading textures...\n";
 
-    // Create data arrays
-    std::vector<Point> vertices;
-    std::vector<Vector3f> normals;
-    std::vector<Face> faces;
+        std::vector<Image> texture_data;
+        initTextures(pathStringArray, texture_data);
+        log << "Textures are initialized\n";
 
-    // init vertices, normals, and faces
-    std::cout << "3/5 : Generating data...\n";
-    initMesh(mesh, vertices, normals, faces);
-    log << "Mesh has been initialized...\n";
+        // Mesh
+        std::cout << "2/5 : Loading temp mesh : " << GoZFilePath << "\n";
+        mesh = new GoZ_Mesh; // NOLINT
+        if (!mesh->readMesh(GoZFilePath)) {
+            throw std::runtime_error("Failed to read the GoZ file");
+        }
+        if (mesh->m_faceType != GoZ_TAG_FACE4_LIST_FORMAT_1) {
+            throw std::runtime_error("Unsupported face format. Only GoZ_TAG_FACE4_LIST_FORMAT_1 is supported");
+        }
+        if (mesh->m_uvs == nullptr) {
+            throw std::runtime_error("The mesh has no UVs");
+        }
+        log << "Mesh obj has been created...\n";
 
-    // Apply displacement
-    if (strcmp(channel, "RGB") == 0) {
-        std::cout << "4/5 : Applying vector displacement...\n";
-        applyVectorDisplacement(mesh, vertices, normals, faces, texture_data);
-        log << "Vector displacement done\n";
-    } else if (strcmp(channel, "COL") == 0) {
-        std::cout << "4/5 : Applying color...\n";
-        applyColor(mesh, faces, texture_data, static_cast<float>(value));
-        log << "Color applied\n";
-    } else if (strcmp(channel, "MSK") == 0) {
-        std::cout << "4/5 : Applying mask...\n";
-        applyMask(mesh, faces, texture_data);
-        log << "Mask applied\n";
-    } else {
-        std::cout << "4/5 : Applying normal displacement...\n";
-        applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel, static_cast<float>(value));
-        log << "Normal displacement done\n";
+        // Create data arrays
+        std::vector<Point> vertices;
+        std::vector<Vector3f> normals;
+        std::vector<Face> faces;
+
+        // init vertices, normals, and faces
+        std::cout << "3/5 : Generating data...\n";
+        initMesh(mesh, vertices, normals, faces);
+        log << "Mesh has been initialized...\n";
+
+        // Apply displacement
+        if (strcmp(channel, "RGB") == 0) {
+            std::cout << "4/5 : Applying vector displacement...\n";
+            applyVectorDisplacement(mesh, vertices, normals, faces, texture_data);
+            log << "Vector displacement done\n";
+        } else if (strcmp(channel, "COL") == 0) {
+            std::cout << "4/5 : Applying color...\n";
+            applyColor(mesh, faces, texture_data, static_cast<float>(value));
+            log << "Color applied\n";
+        } else if (strcmp(channel, "MSK") == 0) {
+            std::cout << "4/5 : Applying mask...\n";
+            applyMask(mesh, faces, texture_data);
+            log << "Mask applied\n";
+        } else {
+            std::cout << "4/5 : Applying normal displacement...\n";
+            applyNormalDisplacement(mesh, vertices, normals, faces, texture_data, channel, static_cast<float>(value));
+            log << "Normal displacement done\n";
+        }
+
+        // write mesh
+        std::cout << "5/5 : Writing mesh...\n";
+        path.replace_filename("UDIMTextureImporter3_out.GoZ");
+        if (!mesh->writeMesh(path.string().c_str())) {
+            throw std::runtime_error("Failed to write the output GoZ file");
+        }
+        log << "Mesh has been saved.\n";
+
+        std::cout << "\nDone.\nYou can close the console now.\n";
+    } catch (const std::exception& e) {
+        log << "Error: " << e.what() << '\n';
+        std::cout << "\nError: " << e.what() << "\nSee UDIMTextureImporter3.log for details.\n";
+        result = 1.0F;
+    } catch (...) {
+        log << "Error: unknown exception\n";
+        std::cout << "\nError: unknown exception\n";
+        result = 1.0F;
     }
-
-    // write mesh
-    std::cout << "5/5 : Writing mesh...\n";
-    path.replace_filename("UDIMTextureImporter3_out.GoZ");
-    mesh->writeMesh(path.string().c_str());
-    log << "Mesh has been saved.\n";
 
     // Close all
     delete mesh; // NOLINT
     log.close();
 
-    std::cout << "\nDone.\nYou can close the console now.\n";
     FreeConsole();
-    return 0.0F;
+    return result;
 }
