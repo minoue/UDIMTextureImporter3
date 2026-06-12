@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstddef>
 #include <filesystem>
 // #include <format>
@@ -208,12 +209,22 @@ auto getPixelValue(const float u, const float v,
     const int y1 = static_cast<int>(std::round(float_height * (1 - v)));
     const int y2 = y1 + 1;
 
+    // Near the tile borders the texel coordinates go out of the valid range
+    // (x1/y1 can be 0, x2/y2 can be width/height + 1), so clamp them for
+    // fetching. The interpolation weights below still use the unclamped
+    // coordinates; when a coordinate is clamped the two fetched texels are
+    // identical, so the weights are harmless.
+    const int fx1 = std::clamp(x1, 1, width);
+    const int fx2 = std::clamp(x2, 1, width);
+    const int fy1 = std::clamp(y1, 1, height);
+    const int fy2 = std::clamp(y2, 1, height);
+
     // Get the first index of RGB values. (array is like [R, G, B, A, R, G, B, A, R, ....] if 4 channels
     // tp1: top-left, tp2: top-right, tp3: bot-left, tp4: bot-right
-    const auto pixelIndex1 = static_cast<size_t>(((width * (y1 - 1) + x1) - 1) * nchannel); // NOLINT
-    const auto pixelIndex2 = static_cast<size_t>(((width * (y1 - 1) + x2) - 1) * nchannel); // NOLINT
-    const auto pixelIndex3 = static_cast<size_t>(((width * (y2 - 1) + x1) - 1) * nchannel); // NOLINT
-    const auto pixelIndex4 = static_cast<size_t>(((width * (y2 - 1) + x2) - 1) * nchannel); // NOLINT
+    const auto pixelIndex1 = static_cast<size_t>(((width * (fy1 - 1) + fx1) - 1) * nchannel); // NOLINT
+    const auto pixelIndex2 = static_cast<size_t>(((width * (fy1 - 1) + fx2) - 1) * nchannel); // NOLINT
+    const auto pixelIndex3 = static_cast<size_t>(((width * (fy2 - 1) + fx1) - 1) * nchannel); // NOLINT
+    const auto pixelIndex4 = static_cast<size_t>(((width * (fy2 - 1) + fx2) - 1) * nchannel); // NOLINT
 
     Vector3f A;
     A << texture.at(pixelIndex1),
