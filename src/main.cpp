@@ -421,7 +421,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         // forth point
         if (isQuad) {
             Vector3f Vec7 = P1 - P4;
-            Vector3f Vec8 = P2 - P4;
+            Vector3f Vec8 = P3 - P4;
             Vector3f N4 = Vec7.cross(Vec8);
             normals.at(static_cast<size_t>(vertexIndex4)) += N4;
         }
