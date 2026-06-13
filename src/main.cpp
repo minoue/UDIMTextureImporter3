@@ -28,6 +28,66 @@ using namespace Eigen;
 #endif
 
 /**
+ * @brief Run body(i) for i in [0, count) across worker threads
+ * @param [in] count : number of independent work items
+ * @param [in] body : work for a single item; must only touch data unique to i
+ *                    (or read-only shared data), otherwise add your own locking
+ *
+ * Mirrors the worker pattern in initTextures: a shared atomic index hands out
+ * items, and the first exception thrown in any thread is captured and
+ * rethrown on the calling thread after all threads join (so an exception
+ * never escapes a worker and calls std::terminate).
+ */
+template <typename F>
+void parallelFor(size_t count, F&& body)
+{
+    if (count == 0) {
+        return;
+    }
+
+    // hardware_concurrency() may return 0, so make sure we get at least 1 thread
+    const unsigned int numThreads = (std::min)(
+        static_cast<unsigned int>(count),
+        (std::max)(1U, std::thread::hardware_concurrency()));
+
+    std::atomic<size_t> nextIndex(0);
+    std::atomic<bool> hasError(false);
+    std::exception_ptr error = nullptr;
+    std::mutex errorMutex;
+
+    auto worker = [&]() -> void {
+        try {
+            while (!hasError.load()) {
+                const size_t i = nextIndex.fetch_add(1);
+                if (i >= count) {
+                    break;
+                }
+                body(i);
+            }
+        } catch (...) {
+            hasError.store(true);
+            std::scoped_lock lock(errorMutex);
+            if (error == nullptr) {
+                error = std::current_exception();
+            }
+        }
+    };
+
+    std::vector<std::thread> threads;
+    threads.reserve(numThreads);
+    for (unsigned int t = 0; t < numThreads; ++t) {
+        threads.emplace_back(worker);
+    }
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    if (error != nullptr) {
+        std::rethrow_exception(error);
+    }
+}
+
+/**
  * @brief Split texture path array
  * @param [in] pathStringArray : Long string containing paths eg. "C:/path/image.1001.exr C:/path/image.1002.exr C:..."
  * @param [in] data : texture data
@@ -556,65 +616,62 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     // written back as (0, 0, 0)
     std::vector<Vector3f> tempVertices(vertices.begin(), vertices.end());
 
-    // Apply displacement
+    // The channel to read is constant for the whole call, so resolve it once
+    const int channelIndex = (*channel == 'R') ? 0 : ((*channel == 'G') ? 1 : 2);
+
+    // Pass 1 (serial): build one work item per vertex, claiming each vertex
+    // for the first face that reaches it. This reproduces the previous
+    // "first face wins" behavior and makes the work items independent so the
+    // heavy per-vertex math can run in parallel without sharing state.
+    std::vector<const FaceVertex*> workItems;
+    workItems.reserve(vertices.size());
+    std::vector<char> claimed(vertices.size(), 0);
     for (auto& f : faces) {
-        std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        const size_t numFaceVertices = faceVertices.size();
-        // size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
-        for (size_t i = 0; i < numFaceVertices; i++) {
-
-            FaceVertex& currentVertex = faceVertices.at(i);
-            const size_t currentIndex = currentVertex.vertexIndex;
-
-            Point& pp0 = vertices.at(currentIndex);
-            if (pp0.isDone) {
+        for (const FaceVertex& fv : f.FaceVertices) {
+            const size_t currentIndex = fv.vertexIndex;
+            if (claimed.at(currentIndex) != 0) {
                 continue;
             }
-
-            Vector3f& uv0 = currentVertex.uvw;
-
-            Vector3f N;
-            N = normals.at(currentIndex);
-
-            UV uv_global(uv0.x(), uv0.y());
-            size_t udim = Image::getUDIMfromUV(uv_global);
-
-            // udim == 0 means the UV is invalid (zero or negative), so leave
-            // the vertex untouched instead of pushing it by -midValue below
-            if (udim == 0) {
-                tempVertices.at(currentIndex) = pp0;
-                pp0.isDone = true;
-                continue;
-            }
-
-            Vector3f displacement;
-
-            if (udim > texture_data.size()) {
-                displacement << 0, 0, 0;
-            } else {
-                Image& img = texture_data.at(udim - 1);
-                if (img.isEmpty) {
-                    displacement << 0, 0, 0;
-                } else {
-                    const int width = img.width;
-                    const int height = img.height;
-                    const int channels = img.nchannels;
-                    UV uv_local = Image::localizeUV(uv_global);
-                    displacement = getPixelValue(uv_local.u, uv_local.v, img.pixels, width, height, channels);
-                }
-            }
-            Vector3f new_pp;
-            if (*channel == 'R') {
-                new_pp = pp0 + (N * (displacement.x() - midValue));
-            } else if (*channel == 'G') {
-                new_pp = pp0 + (N * (displacement.y() - midValue));
-            } else {
-                new_pp = pp0 + (N * (displacement.z() - midValue));
-            }
-            tempVertices.at(currentIndex) = new_pp;
-            pp0.isDone = true;
+            claimed.at(currentIndex) = 1;
+            workItems.push_back(&fv);
         }
     }
+
+    // Pass 2 (parallel): each work item writes a unique tempVertices entry and
+    // only reads shared-immutable data, so no locking is needed. Vertices with
+    // an invalid UV (udim == 0) are left at their original position, which
+    // tempVertices already holds from the copy initialization above.
+    parallelFor(workItems.size(), [&](size_t k) {
+        const FaceVertex* fv = workItems.at(k);
+        const size_t currentIndex = fv->vertexIndex;
+        const Vector3f& uv0 = fv->uvw;
+
+        UV uv_global(uv0.x(), uv0.y());
+        const size_t udim = Image::getUDIMfromUV(uv_global);
+        if (udim == 0) {
+            return;
+        }
+
+        Vector3f displacement;
+        if (udim > texture_data.size()) {
+            displacement << 0, 0, 0;
+        } else {
+            Image& img = texture_data.at(udim - 1);
+            if (img.isEmpty) {
+                displacement << 0, 0, 0;
+            } else {
+                const int width = img.width;
+                const int height = img.height;
+                const int channels = img.nchannels;
+                UV uv_local = Image::localizeUV(uv_global);
+                displacement = getPixelValue(uv_local.u, uv_local.v, img.pixels, width, height, channels);
+            }
+        }
+
+        const Vector3f& pp0 = vertices.at(currentIndex);
+        const Vector3f& N = normals.at(currentIndex);
+        tempVertices.at(currentIndex) = pp0 + (N * (displacement[channelIndex] - midValue));
+    });
 
     size_t numVerts = vertices.size();
     std::span<float> vertices_span(mesh->m_vertices, static_cast<size_t>(mesh->m_vertexCount)*3);
