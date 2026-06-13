@@ -445,8 +445,10 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Face>& faces,
     std::vector<Image>& texture_data)
 {
-    std::vector<Vector3f> tempVertices;
-    tempVertices.resize(vertices.size());
+    // Initialize with the original positions (Point sliced to Vector3f) so
+    // vertices not touched by any face keep their place instead of being
+    // written back as (0, 0, 0)
+    std::vector<Vector3f> tempVertices(vertices.begin(), vertices.end());
 
     // Apply displacement
     for (auto& face : faces) {
@@ -549,8 +551,10 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     std::vector<Face>& faces,
     std::vector<Image>& texture_data, const char* channel, float midValue)
 {
-    std::vector<Vector3f> tempVertices;
-    tempVertices.resize(vertices.size());
+    // Initialize with the original positions (Point sliced to Vector3f) so
+    // vertices not touched by any face keep their place instead of being
+    // written back as (0, 0, 0)
+    std::vector<Vector3f> tempVertices(vertices.begin(), vertices.end());
 
     // Apply displacement
     for (auto& f : faces) {
