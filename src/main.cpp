@@ -698,49 +698,64 @@ void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     }
 
     std::span<unsigned int> rgb_span(mesh->m_mrgb, numVerts);
+
+    // Pass 1 (serial): one work item per vertex, claimed by the first face
+    // that reaches it (consistent with the displacement functions)
+    std::vector<const FaceVertex*> workItems;
+    workItems.reserve(numVerts);
+    std::vector<char> claimed(numVerts, 0);
     for (auto& f : faces) {
-        std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        const size_t numFaceVertices = faceVertices.size();
-        for (size_t i = 0; i < numFaceVertices; i++) {
-            FaceVertex& currentVertex = faceVertices.at(i);
-            const size_t currentIndex = currentVertex.vertexIndex;
-
-            Vector3f& uv0 = currentVertex.uvw;
-            UV uv_global(uv0.x(), uv0.y());
-            size_t udim = Image::getUDIMfromUV(uv_global);
-
-            // udim == 0 means the UV is invalid (zero or negative)
-            if (udim == 0 || udim > texture_data.size()) {
+        for (const FaceVertex& fv : f.FaceVertices) {
+            const size_t currentIndex = fv.vertexIndex;
+            if (claimed.at(currentIndex) != 0) {
                 continue;
             }
-
-            Vector3f rgb;
-            rgb << 0, 0, 0;
-
-            Image& img = texture_data.at(udim - 1);
-            if (!img.isEmpty) {
-                const int width = img.width;
-                const int height = img.height;
-                const int channels = img.nchannels;
-                UV uv_local = Image::localizeUV(uv_global);
-                rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
-                    height, channels);
-
-                // Convert 4 8-bit int to a single 32 bit value
-                // https://stackoverflow.com/questions/65136404/c-how-to-store-four-8-bit-integers-as-a-32-bit-unsigned-integer
-                constexpr int m = 0;
-                const int r = static_cast<int>(round(pow(rgb.x(), 1 / gamma) * 255.0));
-                const int g = static_cast<int>(round(pow(rgb.y(), 1 / gamma) * 255.0));
-                const int b = static_cast<int>(round(pow(rgb.z(), 1 / gamma) * 255.0));
-                const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
-
-                // replace color
-                if (rgb_span[currentIndex] != 0) { // NULL NOLINT
-                    rgb_span[currentIndex] = ui32; // NOLINT
-                }
-            }
+            claimed.at(currentIndex) = 1;
+            workItems.push_back(&fv);
         }
     }
+
+    // Pass 2 (parallel): each work item writes a unique rgb_span entry. The
+    // "don't overwrite black" read/write only touches that vertex, so there
+    // is no cross-vertex dependency and no locking is needed.
+    parallelFor(workItems.size(), [&](size_t k) {
+        const FaceVertex* fv = workItems.at(k);
+        const size_t currentIndex = fv->vertexIndex;
+
+        const Vector3f& uv0 = fv->uvw;
+        UV uv_global(uv0.x(), uv0.y());
+        const size_t udim = Image::getUDIMfromUV(uv_global);
+
+        // udim == 0 means the UV is invalid (zero or negative)
+        if (udim == 0 || udim > texture_data.size()) {
+            return;
+        }
+
+        Image& img = texture_data.at(udim - 1);
+        if (img.isEmpty) {
+            return;
+        }
+
+        const int width = img.width;
+        const int height = img.height;
+        const int channels = img.nchannels;
+        UV uv_local = Image::localizeUV(uv_global);
+        Vector3f rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
+            height, channels);
+
+        // Convert 4 8-bit int to a single 32 bit value
+        // https://stackoverflow.com/questions/65136404/c-how-to-store-four-8-bit-integers-as-a-32-bit-unsigned-integer
+        constexpr int m = 0;
+        const int r = static_cast<int>(round(pow(rgb.x(), 1 / gamma) * 255.0));
+        const int g = static_cast<int>(round(pow(rgb.y(), 1 / gamma) * 255.0));
+        const int b = static_cast<int>(round(pow(rgb.z(), 1 / gamma) * 255.0));
+        const uint32_t ui32 = (static_cast<uint32_t>(m & 0xFF) << 24) | (static_cast<uint32_t>(r & 0xFF) << 16) | (static_cast<uint32_t>(g & 0xFF) << 8) | static_cast<uint32_t>(b & 0xFF);
+
+        // replace color
+        if (rgb_span[currentIndex] != 0) { // NULL NOLINT
+            rgb_span[currentIndex] = ui32; // NOLINT
+        }
+    });
 }
 
 auto remapValue(const float oldValue, const float oldMin, const float oldMax, const float newMin, const float newMax) -> int
@@ -797,43 +812,57 @@ void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& tex
     }
 
     std::span<unsigned short> mask_span(mesh->m_mask, numVerts);
+
+    // Pass 1 (serial): one work item per vertex, claimed by the first face
+    // that reaches it (consistent with the displacement functions)
+    std::vector<const FaceVertex*> workItems;
+    workItems.reserve(numVerts);
+    std::vector<char> claimed(numVerts, 0);
     for (auto& f : faces) {
-        std::vector<FaceVertex>& faceVertices = f.FaceVertices;
-        const size_t numFaceVertices = faceVertices.size();
-        for (size_t i = 0; i < numFaceVertices; i++) {
-            FaceVertex& currentVertex = faceVertices.at(i);
-            const size_t currentIndex = currentVertex.vertexIndex;
-
-            Vector3f& uv0 = currentVertex.uvw;
-            UV uv_global(uv0.x(), uv0.y());
-            size_t udim = Image::getUDIMfromUV(uv_global);
-
-            // udim == 0 means the UV is invalid (zero or negative)
-            if (udim == 0 || udim > texture_data.size()) {
+        for (const FaceVertex& fv : f.FaceVertices) {
+            const size_t currentIndex = fv.vertexIndex;
+            if (claimed.at(currentIndex) != 0) {
                 continue;
             }
-
-            Vector3f rgb;
-            rgb << 0, 0, 0;
-
-            Image& img = texture_data.at(udim - 1);
-            if (!img.isEmpty) {
-                const int width = img.width;
-                const int height = img.height;
-                const int channels = img.nchannels;
-                UV uv_local = Image::localizeUV(uv_global);
-                rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
-                    height, channels);
-
-                const auto r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
-
-                // replace color
-                if (mask_span[currentIndex] != 0) { // NULL NOLINT
-                    mask_span[currentIndex] = r; // NOLINT
-                }
-            }
+            claimed.at(currentIndex) = 1;
+            workItems.push_back(&fv);
         }
     }
+
+    // Pass 2 (parallel): each work item writes a unique mask_span entry, so no
+    // locking is needed.
+    parallelFor(workItems.size(), [&](size_t k) {
+        const FaceVertex* fv = workItems.at(k);
+        const size_t currentIndex = fv->vertexIndex;
+
+        const Vector3f& uv0 = fv->uvw;
+        UV uv_global(uv0.x(), uv0.y());
+        const size_t udim = Image::getUDIMfromUV(uv_global);
+
+        // udim == 0 means the UV is invalid (zero or negative)
+        if (udim == 0 || udim > texture_data.size()) {
+            return;
+        }
+
+        Image& img = texture_data.at(udim - 1);
+        if (img.isEmpty) {
+            return;
+        }
+
+        const int width = img.width;
+        const int height = img.height;
+        const int channels = img.nchannels;
+        UV uv_local = Image::localizeUV(uv_global);
+        Vector3f rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
+            height, channels);
+
+        const auto r = static_cast<uint16_t>(round(rgb.x() * 65535.0));
+
+        // replace color
+        if (mask_span[currentIndex] != 0) { // NULL NOLINT
+            mask_span[currentIndex] = r; // NOLINT
+        }
+    });
 }
 
 /**
