@@ -299,7 +299,7 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
 {
     int numVerts = mesh->m_vertexCount;
     vertices.reserve(static_cast<size_t>(numVerts));
-    std::span<float> verts(mesh->m_vertices, static_cast<size_t>(numVerts));
+    std::span<float> verts(mesh->m_vertices, static_cast<size_t>(numVerts*3));
     for (int i = 0; i < numVerts * 3; i += 3) {
         float x = verts[i]; // NOLINT
         float y = verts[i + 1]; // NOLINT
