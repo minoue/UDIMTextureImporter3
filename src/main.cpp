@@ -428,19 +428,16 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         f.faceIndex = static_cast<size_t>(faceIndex);
 
         FaceVertex FV1;
-        FV1.pointPosition = P1;
         FV1.uvw << u1, v1, 0;
         FV1.vertexIndex = static_cast<size_t>(vertexIndex1);
         f.FaceVertices.push_back(FV1);
 
         FaceVertex FV2;
-        FV2.pointPosition = P2;
         FV2.uvw << u2, v2, 0;
         FV2.vertexIndex = static_cast<size_t>(vertexIndex2);
         f.FaceVertices.push_back(FV2);
 
         FaceVertex FV3;
-        FV3.pointPosition = P3;
         FV3.uvw << u3, v3, 0;
         FV3.vertexIndex = static_cast<size_t>(vertexIndex3);
         f.FaceVertices.push_back(FV3);
@@ -448,7 +445,6 @@ void initMesh(GoZ_Mesh* mesh, std::vector<Point>& vertices,
         // If not triangle
         if (isQuad) {
             FaceVertex FV4;
-            FV4.pointPosition = P4;
             FV4.uvw << u4, v4, 0;
             FV4.vertexIndex = static_cast<size_t>(vertexIndex4);
             f.FaceVertices.push_back(FV4);

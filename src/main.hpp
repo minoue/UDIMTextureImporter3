@@ -9,10 +9,7 @@ using namespace Eigen;
 
 struct FaceVertex {
     size_t vertexIndex;
-    Vector3f pointPosition;
     Vector3f uvw;
-    float u;
-    float v;
 };
 
 struct Point : Vector3f {
