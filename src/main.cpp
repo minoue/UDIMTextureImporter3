@@ -628,10 +628,20 @@ void applyNormalDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
  * @param [in] texture_data : pixel data for each texture
  * @param [in] gamma : gamma value, default is 1, use 2.2 for loading linear textures
  */
-void applyColor(const GoZ_Mesh* mesh, std::vector<Face>& faces,
+void applyColor(GoZ_Mesh* mesh, std::vector<Face>& faces,
     std::vector<Image>& texture_data, float gamma)
 {
-    std::span<unsigned int> rgb_span(mesh->m_mrgb, mesh->m_vertexCount);
+    const auto numVerts = static_cast<size_t>(mesh->m_vertexCount);
+
+    // m_mrgb is NULL when the mesh has no polypaint yet, so create the
+    // block initialized to white (the ZBrush default). GoZ_Mesh::clear()
+    // releases it with delete[].
+    if (mesh->m_mrgb == nullptr) {
+        mesh->m_mrgb = new unsigned int[numVerts]; // NOLINT
+        std::fill_n(mesh->m_mrgb, numVerts, 0xFFFFFFFFU);
+    }
+
+    std::span<unsigned int> rgb_span(mesh->m_mrgb, numVerts);
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
         const size_t numFaceVertices = faceVertices.size();
@@ -718,9 +728,19 @@ void debugNormals(const GoZ_Mesh* mesh, std::vector<Vector3f>& normals)
  * @param [in] faces : Face array
  * @param [in] texture_data : pixel data for each texture
  */
-void applyMask(const GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
+void applyMask(GoZ_Mesh* mesh, std::vector<Face>& faces, std::vector<Image>& texture_data)
 {
-    std::span<unsigned short> mask_span(mesh->m_mask, static_cast<size_t>(mesh->m_vertexCount));
+    const auto numVerts = static_cast<size_t>(mesh->m_vertexCount);
+
+    // m_mask is NULL when the mesh has no mask yet, so create the block
+    // initialized to 0xFFFF (unmasked, the ZBrush default). GoZ_Mesh::clear()
+    // releases it with delete[].
+    if (mesh->m_mask == nullptr) {
+        mesh->m_mask = new unsigned short[numVerts]; // NOLINT
+        std::fill_n(mesh->m_mask, numVerts, static_cast<unsigned short>(0xFFFFU));
+    }
+
+    std::span<unsigned short> mask_span(mesh->m_mask, numVerts);
     for (auto& f : faces) {
         std::vector<FaceVertex>& faceVertices = f.FaceVertices;
         const size_t numFaceVertices = faceVertices.size();
