@@ -510,82 +510,81 @@ void applyVectorDisplacement(const GoZ_Mesh* mesh, std::vector<Point>& vertices,
     // written back as (0, 0, 0)
     std::vector<Vector3f> tempVertices(vertices.begin(), vertices.end());
 
-    // Apply displacement
+    // The tangent space of a vertex is built from the face corner that first
+    // reaches it, using its previous and next corner in that face
+    struct WorkItem {
+        const FaceVertex* prev;
+        const FaceVertex* cur;
+        const FaceVertex* next;
+    };
+
+    // Pass 1 (serial): build one work item per vertex, claiming each vertex
+    // for the first face that reaches it (same first-face-wins behavior as
+    // before), so the heavy per-vertex math can run in parallel.
+    std::vector<WorkItem> workItems;
+    workItems.reserve(vertices.size());
+    std::vector<char> claimed(vertices.size(), 0);
     for (auto& face : faces) {
         std::vector<FaceVertex>& faceVertices = face.FaceVertices;
         const size_t numFaceVertices = faceVertices.size();
         const size_t lastFaceVertex = numFaceVertices - 1; // 3 if quad, 2 if triangle
         for (size_t i = 0; i < numFaceVertices; i++) {
-            FaceVertex *previousVertex = nullptr;
-            FaceVertex *currentVertex = nullptr;
-            FaceVertex *nextVertex = nullptr;
-            if (i == 0) {
-                previousVertex = &faceVertices.at(lastFaceVertex);
-                currentVertex = &faceVertices.at(i);
-                nextVertex = &faceVertices.at(i + 1);
-            } else if (i == lastFaceVertex) {
-                previousVertex = &faceVertices.at(i - 1);
-                currentVertex = &faceVertices.at(i);
-                nextVertex = &faceVertices.at(0);
-            } else {
-                previousVertex = &faceVertices.at(i - 1);
-                currentVertex = &faceVertices.at(i);
-                nextVertex = &faceVertices.at(i + 1);
-            }
+            const size_t prevPos = (i == 0) ? lastFaceVertex : (i - 1);
+            const size_t nextPos = (i == lastFaceVertex) ? 0 : (i + 1);
 
-            const size_t previousIndex = previousVertex->vertexIndex;
+            const FaceVertex* currentVertex = &faceVertices.at(i);
             const size_t currentIndex = currentVertex->vertexIndex;
-            const size_t nextIndex = nextVertex->vertexIndex;
-
-            Point& pp0 = vertices.at(currentIndex);
-            Point& pp1 = vertices.at(previousIndex);
-            Point& pp2 = vertices.at(nextIndex);
-
-            if (pp0.isDone) {
+            if (claimed.at(currentIndex) != 0) {
                 continue;
             }
-
-            Vector3f& uv0 = currentVertex->uvw;
-            Vector3f& uv1 = previousVertex->uvw;
-            Vector3f& uv2 = nextVertex->uvw;
-
-            Vector3f T;
-            Vector3f B;
-            Vector3f N;
-            N = normals.at(currentIndex);
-
-            Matrix3f mat;
-            mat = computeTangentMatrix(pp0, pp1, pp2, uv0, uv1, uv2, T, B, N);
-
-            UV uv_global(uv0.x(), uv0.y());
-            size_t udim = Image::getUDIMfromUV(uv_global);
-
-            Vector3f displacement;
-
-            // udim == 0 means the UV is invalid (zero or negative)
-            if (udim == 0 || udim > texture_data.size()) {
-                displacement << 0, 0, 0;
-            } else {
-                Image& img = texture_data.at(udim - 1);
-                if (img.isEmpty) {
-                    displacement << 0, 0, 0;
-                } else {
-                    const int width = img.width;
-                    const int height = img.height;
-                    const int channels = img.nchannels;
-                    UV uv_local = Image::localizeUV(uv_global);
-                    Vector3f rgb;
-                    rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
-                        height, channels);
-                    displacement = rgb.transpose() * mat;
-                }
-            }
-            const Vector3f new_pp = pp0 + displacement;
-            tempVertices.at(currentIndex) = new_pp;
-
-            pp0.isDone = true;
+            claimed.at(currentIndex) = 1;
+            workItems.push_back({ &faceVertices.at(prevPos), currentVertex, &faceVertices.at(nextPos) });
         }
     }
+
+    // Pass 2 (parallel): each work item writes a unique tempVertices entry and
+    // only reads shared-immutable data, so no locking is needed.
+    parallelFor(workItems.size(), [&](size_t k) {
+        const WorkItem& w = workItems.at(k);
+        const size_t currentIndex = w.cur->vertexIndex;
+
+        const Vector3f& pp0 = vertices.at(currentIndex);
+        const Vector3f& pp1 = vertices.at(w.prev->vertexIndex);
+        const Vector3f& pp2 = vertices.at(w.next->vertexIndex);
+
+        const Vector3f& uv0 = w.cur->uvw;
+        const Vector3f& uv1 = w.prev->uvw;
+        const Vector3f& uv2 = w.next->uvw;
+
+        Vector3f T;
+        Vector3f B;
+        Vector3f N = normals.at(currentIndex);
+
+        Matrix3f mat = computeTangentMatrix(pp0, pp1, pp2, uv0, uv1, uv2, T, B, N);
+
+        UV uv_global(uv0.x(), uv0.y());
+        const size_t udim = Image::getUDIMfromUV(uv_global);
+
+        Vector3f displacement;
+        // udim == 0 means the UV is invalid (zero or negative)
+        if (udim == 0 || udim > texture_data.size()) {
+            displacement << 0, 0, 0;
+        } else {
+            Image& img = texture_data.at(udim - 1);
+            if (img.isEmpty) {
+                displacement << 0, 0, 0;
+            } else {
+                const int width = img.width;
+                const int height = img.height;
+                const int channels = img.nchannels;
+                UV uv_local = Image::localizeUV(uv_global);
+                Vector3f rgb = getPixelValue(uv_local.u, uv_local.v, img.pixels, width,
+                    height, channels);
+                displacement = rgb.transpose() * mat;
+            }
+        }
+        tempVertices.at(currentIndex) = pp0 + displacement;
+    });
 
     const size_t numVerts = vertices.size();
     std::span<float> vertices_span(mesh->m_vertices, static_cast<size_t>(mesh->m_vertexCount)*3);
